@@ -37,7 +37,7 @@ void main() {
 
   test('altimetria ignora ruído menor que o limiar', () {
     final e = ElevationAccumulator();
-    for (final v in [800.0, 802, 799, 801, 810, 809, 811, 820, 805]) {
+    for (final v in <double>[800, 802, 799, 801, 810, 809, 811, 820, 805]) {
       e.add(v);
     }
     expect(e.gain, closeTo(20, 0.01));
