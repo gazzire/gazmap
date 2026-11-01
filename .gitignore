@@ -1,0 +1,30 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+pubspec.lock.bak
+
+# Plataformas geradas por tool/setup_android.sh
+/android/
+/ios/
+/linux/
+/macos/
+/windows/
+/web/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Segredos locais (nunca versionar)
+*.jks
+*.keystore
+key.properties
+.env
+
+*.apk
