@@ -47,11 +47,11 @@ class SettingsScreen extends StatelessWidget {
             const _Header('Sobre'),
             const ListTile(
               leading: Icon(Icons.terrain),
-              title: Text('Rastro 0.1.0'),
+              title: Text('GAZMAP 0.1.0'),
               subtitle: Text(
                   'Software livre (GPL v3). Gratuito para sempre, sem anúncios '
                   'e sem conta. Seus dados ficam no seu celular.\n'
-                  'github.com/gazzire/rastro'),
+                  'github.com/gazzire/gazmap'),
             ),
             const ListTile(
               leading: Icon(Icons.map_outlined),
@@ -63,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
               title: Text('Dica de bateria'),
               subtitle: Text(
                   'Se a gravação parar com a tela apagada, desative a otimização '
-                  'de bateria para o Rastro nas configurações do Android.'),
+                  'de bateria para o GAZMAP nas configurações do Android.'),
             ),
           ],
         ),

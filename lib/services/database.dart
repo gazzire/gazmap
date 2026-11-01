@@ -20,7 +20,7 @@ class AppDatabase {
   Future<Database> _open() async {
     final dir = await getDatabasesPath();
     return openDatabase(
-      p.join(dir, 'rastro.db'),
+      p.join(dir, 'gazmap.db'),
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''

@@ -1,10 +1,10 @@
-# Rastro — Roadmap
+# GAZMAP — Roadmap
 
 App de trilhas **livre (GPL v3), gratuito e offline-first**.
 
 ## Princípios (nascidos das reclamações dos usuários de Strava, AllTrails, Komoot e similares)
 
-| Reclamação recorrente | Compromisso do Rastro |
+| Reclamação recorrente | Compromisso do GAZMAP |
 |---|---|
 | Recursos gratuitos movidos para trás de assinatura | **Nada pago, nunca.** O que é livre continua livre (garantido pela GPL) |
 | Mapa offline bloqueado, descoberto só quando o sinal já sumiu | Download de mapas **grátis e explícito antes de sair** |

@@ -1,5 +1,5 @@
-name: rastro
-description: "Rastro — app de trilhas livre e aberto: grave suas atividades com GPS, online e offline."
+name: gazmap
+description: "GAZMAP — app de trilhas livre e aberto: grave suas atividades com GPS, online e offline."
 publish_to: 'none'
 version: 0.1.0+1
 

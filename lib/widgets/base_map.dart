@@ -9,7 +9,7 @@ List<Widget> baseMapLayers(MapStyle style) => [
       TileLayer(
         urlTemplate: style.url,
         maxNativeZoom: style.maxNativeZoom,
-        userAgentPackageName: 'br.com.gazire.rastro',
+        userAgentPackageName: 'br.com.gazire.gazmap',
         tileProvider: CachedTileProvider(style),
       ),
     ];

@@ -43,15 +43,15 @@ jobs:
         run: flutter build apk --release
 
       - name: Renomear APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk rastro.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk gazmap.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: rastro-apk
-          path: rastro.apk
+          name: gazmap-apk
+          path: gazmap.apk
 
       - name: Publicar versão
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: rastro.apk
+          files: gazmap.apk

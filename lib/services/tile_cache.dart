@@ -18,7 +18,7 @@ class TileCache {
   TileCache._();
   static final TileCache instance = TileCache._();
 
-  static const userAgent = 'Rastro/0.1 (+https://github.com/gazzire/rastro)';
+  static const userAgent = 'GAZMAP/0.1 (+https://github.com/gazzire/gazmap)';
 
   late Directory root;
   final http.Client _client = http.Client();

@@ -64,7 +64,7 @@ class Recorder extends ChangeNotifier {
       return 'A permissão de localização foi negada. Libere nas configurações do app.';
     }
     if (perm == LocationPermission.denied) {
-      return 'O Rastro precisa da sua localização para gravar trilhas.';
+      return 'O GAZMAP precisa da sua localização para gravar trilhas.';
     }
     return null;
   }
@@ -79,7 +79,7 @@ class Recorder extends ChangeNotifier {
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: recording
             ? const ForegroundNotificationConfig(
-                notificationTitle: 'Rastro está gravando',
+                notificationTitle: 'GAZMAP está gravando',
                 notificationText: 'Sua atividade continua sendo registrada.',
                 notificationChannelName: 'Gravação de atividade',
                 enableWakeLock: true,

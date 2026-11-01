@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rastro/models/track.dart';
-import 'package:rastro/utils/format.dart';
-import 'package:rastro/utils/geo.dart';
+import 'package:gazmap/models/track.dart';
+import 'package:gazmap/utils/format.dart';
+import 'package:gazmap/utils/geo.dart';
 
 void main() {
   test('haversine: 1 grau de latitude ≈ 111 km', () {

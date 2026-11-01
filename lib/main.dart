@@ -10,13 +10,13 @@ Future<void> main() async {
   await Settings.instance.load();
   await TileCache.instance.init();
   await Recorder.instance.recoverUnfinished();
-  runApp(const RastroApp());
+  runApp(const GazmapApp());
 }
 
 const brandOrange = Color(0xFFFF6B1A);
 
-class RastroApp extends StatelessWidget {
-  const RastroApp({super.key});
+class GazmapApp extends StatelessWidget {
+  const GazmapApp({super.key});
 
   ThemeData _theme(Brightness b) {
     final scheme = ColorScheme.fromSeed(
@@ -38,7 +38,7 @@ class RastroApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rastro',
+      title: 'GAZMAP',
       debugShowCheckedModeBanner: false,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),

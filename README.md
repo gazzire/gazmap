@@ -1,13 +1,13 @@
-# Rastro 🥾
+# GAZMAP 🥾
 
 **App de trilhas livre, gratuito e offline.** Grave caminhadas, trilhas, corridas e pedais com GPS, mesmo sem sinal de celular.
 
 > Sem assinatura, sem anúncios, sem conta obrigatória. Seus dados ficam no seu celular.
 > Licença GPL v3: qualquer pessoa pode usar, estudar, modificar e compartilhar, e as melhorias continuam abertas.
 
-## Por que o Rastro existe
+## Por que o GAZMAP existe
 
-Os apps populares de atividade física vêm movendo recursos que eram gratuitos (como mapa offline, retrospectiva anual e rankings) para trás de assinaturas. O Rastro faz o caminho contrário: o essencial é grátis para sempre, e o código é da comunidade.
+Os apps populares de atividade física vêm movendo recursos que eram gratuitos (como mapa offline, retrospectiva anual e rankings) para trás de assinaturas. O GAZMAP faz o caminho contrário: o essencial é grátis para sempre, e o código é da comunidade.
 
 ## Recursos (v0.1)
 
@@ -26,19 +26,19 @@ Veja o que vem depois no [ROADMAP](ROADMAP.md).
 
 ## Instalar (Android)
 
-1. Abra a aba [Releases](https://github.com/gazzire/rastro/releases) e baixe `rastro.apk`
+1. Abra a aba [Releases](https://github.com/gazzire/gazmap/releases) e baixe `gazmap.apk`
 2. No celular, permita "instalar apps de fontes desconhecidas"
-3. Abra o Rastro e permita a localização
+3. Abra o GAZMAP e permita a localização
 
-**Dica:** se a gravação parar com a tela apagada, desative a otimização de bateria para o Rastro (Configurações → Apps → Rastro → Bateria → Sem restrições).
+**Dica:** se a gravação parar com a tela apagada, desative a otimização de bateria para o GAZMAP (Configurações → Apps → GAZMAP → Bateria → Sem restrições).
 
 ## Desenvolver
 
 Requisitos: [Flutter 3.24+](https://docs.flutter.dev/get-started/install) e JDK 17.
 
 ```bash
-git clone https://github.com/gazzire/rastro.git
-cd rastro
+git clone https://github.com/gazzire/gazmap.git
+cd gazmap
 bash tool/setup_android.sh   # gera a pasta android/ com as permissões
 flutter pub get
 flutter test
@@ -79,7 +79,7 @@ Contribuições são muito bem-vindas! Leia o [CONTRIBUTING](CONTRIBUTING.md).
 - Mapa topográfico © [OpenTopoMap](https://opentopomap.org) (CC-BY-SA)
 - Busca de lugares: [Nominatim](https://nominatim.org)
 
-Os servidores gratuitos de mapas têm limites de uso. O Rastro limita o tamanho de cada download e se identifica corretamente. Para uso intenso, configure seu próprio servidor de mapas em **Ajustes → Servidor próprio**.
+Os servidores gratuitos de mapas têm limites de uso. O GAZMAP limita o tamanho de cada download e se identifica corretamente. Para uso intenso, configure seu próprio servidor de mapas em **Ajustes → Servidor próprio**.
 
 ## Licença
 

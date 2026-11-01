@@ -1,6 +1,6 @@
 # Como contribuir
 
-Obrigado por querer melhorar o Rastro!
+Obrigado por querer melhorar o GAZMAP!
 
 ## Regras do projeto
 

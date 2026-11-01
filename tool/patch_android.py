@@ -1,4 +1,4 @@
-"""Aplica as configurações Android do Rastro (idempotente)."""
+"""Aplica as configurações Android do GAZMAP (idempotente)."""
 import re
 from pathlib import Path
 
@@ -21,7 +21,7 @@ for perm in PERMISSIONS:
     if perm not in m:
         m = m.replace("<application", f"{tag}\n    <application", 1)
 
-m = re.sub(r'android:label="[^"]*"', 'android:label="Rastro"', m, count=1)
+m = re.sub(r'android:label="[^"]*"', 'android:label="GAZMAP"', m, count=1)
 
 # Necessário para os avisos por voz (Android 11+).
 tts = '<action android:name="android.intent.action.TTS_SERVICE"/>'
