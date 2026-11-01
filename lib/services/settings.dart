@@ -54,6 +54,18 @@ class Settings extends ChangeNotifier {
   String customUrl = '';
   bool voice = true;
   bool autoPause = true;
+
+  /// Avisos por voz: 'distance' (a cada X km) ou 'time' (a cada X min).
+  String voiceMode = 'distance';
+  double voiceKm = 1;
+  int voiceMinutes = 15;
+  bool sayDistance = true;
+  bool sayTime = true;
+  bool sayPace = true;
+  bool sayGain = false;
+
+  static const voiceKmOptions = [0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0];
+  static const voiceMinuteOptions = [5, 10, 15, 30, 60];
   Activity activity = Activity.trilha;
 
   Future<void> load() async {
@@ -63,6 +75,47 @@ class Settings extends ChangeNotifier {
     voice = _prefs.getBool('voice') ?? true;
     autoPause = _prefs.getBool('autoPause') ?? true;
     activity = Activity.fromName(_prefs.getString('activity'));
+    voiceMode = _prefs.getString('voiceMode') ?? 'distance';
+    voiceKm = _prefs.getDouble('voiceKm') ?? 1;
+    voiceMinutes = _prefs.getInt('voiceMinutes') ?? 15;
+    sayDistance = _prefs.getBool('sayDistance') ?? true;
+    sayTime = _prefs.getBool('sayTime') ?? true;
+    sayPace = _prefs.getBool('sayPace') ?? true;
+    sayGain = _prefs.getBool('sayGain') ?? false;
+  }
+
+  Future<void> setVoiceMode(String mode) async {
+    voiceMode = mode;
+    await _prefs.setString('voiceMode', mode);
+    notifyListeners();
+  }
+
+  Future<void> setVoiceKm(double km) async {
+    voiceKm = km;
+    await _prefs.setDouble('voiceKm', km);
+    notifyListeners();
+  }
+
+  Future<void> setVoiceMinutes(int min) async {
+    voiceMinutes = min;
+    await _prefs.setInt('voiceMinutes', min);
+    notifyListeners();
+  }
+
+  /// key: 'sayDistance' | 'sayTime' | 'sayPace' | 'sayGain'
+  Future<void> setSay(String key, bool v) async {
+    switch (key) {
+      case 'sayDistance':
+        sayDistance = v;
+      case 'sayTime':
+        sayTime = v;
+      case 'sayPace':
+        sayPace = v;
+      case 'sayGain':
+        sayGain = v;
+    }
+    await _prefs.setBool(key, v);
+    notifyListeners();
   }
 
   String get styleId => _styleId;

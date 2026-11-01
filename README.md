@@ -17,7 +17,7 @@ Os apps populares de atividade física vêm movendo recursos que eram gratuitos 
 - 📡 **GPS em segundo plano** com a tela apagada e o celular no bolso
 - 📊 Distância, tempo em movimento, ritmo, velocidade, subida e descida
 - ⏸️ Pausa manual e automática; **"segure para finalizar"** evita toques acidentais
-- 🔊 **Avisos por voz** a cada quilômetro
+- 🔊 **Avisos por voz configuráveis:** a cada 500 m até 20 km, ou a cada 5 a 60 minutos, e você escolhe o que ouvir
 - 🗺️ **Mapas offline grátis:** busque o lugar pelo nome (ex.: "Serra do Cipó"), ajuste a área e baixe
 - 🏔️ Mapa topográfico com curvas de nível (OpenTopoMap) ou mapa de ruas (OpenStreetMap)
 - 📈 Perfil de altimetria de cada atividade

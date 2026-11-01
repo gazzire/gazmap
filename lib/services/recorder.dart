@@ -33,7 +33,8 @@ class Recorder extends ChangeNotifier {
   Timer? _ticker;
   int _segment = 0;
   DateTime? _lastMovingAt;
-  int _nextKm = 1;
+  double _nextMarkMeters = 1000;
+  Duration _nextTimeMark = const Duration(minutes: 15);
   final FlutterTts _tts = FlutterTts();
   bool _ttsReady = false;
 
@@ -159,9 +160,13 @@ class Recorder extends ChangeNotifier {
       autoPaused = true;
     }
 
-    if (stats.distance >= _nextKm * 1000) {
-      _announceKm(_nextKm);
-      _nextKm++;
+    final s = Settings.instance;
+    if (s.voiceMode == 'distance' && stats.distance >= _nextMarkMeters) {
+      _announce();
+      final step = s.voiceKm * 1000;
+      while (_nextMarkMeters <= stats.distance) {
+        _nextMarkMeters += step;
+      }
     }
     notifyListeners();
   }
@@ -183,13 +188,25 @@ class Recorder extends ChangeNotifier {
       ..clear()
       ..add(<LatLng>[]);
     _segment = 0;
-    _nextKm = 1;
+    _nextMarkMeters = Settings.instance.voiceKm * 1000;
+    _nextTimeMark = Duration(minutes: Settings.instance.voiceMinutes);
     _lastMovingAt = now;
     autoPaused = false;
     state = RecState.recording;
     _listen(recording: true);
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (active) notifyListeners();
+      if (!active) return;
+      final s = Settings.instance;
+      if (state == RecState.recording &&
+          s.voiceMode == 'time' &&
+          elapsed >= _nextTimeMark) {
+        _announce();
+        final step = Duration(minutes: s.voiceMinutes);
+        while (_nextTimeMark <= elapsed) {
+          _nextTimeMark += step;
+        }
+      }
+      notifyListeners();
     });
     _say('Gravação iniciada.');
     notifyListeners();
@@ -290,21 +307,39 @@ class Recorder extends ChangeNotifier {
     }
   }
 
-  void _announceKm(int km) {
-    final t = movingTime;
-    final min = t.inMinutes;
-    final buf = StringBuffer(km == 1 ? '1 quilômetro. ' : '$km quilômetros. ')
-      ..write('Tempo, $min minutos. ');
-    if (track!.activity.usesSpeed) {
-      buf.write(
-          'Velocidade média, ${(avgSpeedMps * 3.6).round()} quilômetros por hora.');
-    } else {
-      final p = pace;
-      if (p != null) {
+  void _announce() {
+    final s = Settings.instance;
+    final buf = StringBuffer();
+    if (s.sayDistance) {
+      var km = (stats.distance / 1000).toStringAsFixed(1).replaceAll('.', ',');
+      if (km.endsWith(',0')) km = km.substring(0, km.length - 2);
+      buf.write(km == '1' ? '1 quilômetro. ' : '$km quilômetros. ');
+    }
+    if (s.sayTime) {
+      final t = movingTime;
+      final h = t.inHours, m = t.inMinutes % 60;
+      final parts = <String>[
+        if (h > 0) h == 1 ? '1 hora' : '$h horas',
+        if (m > 0 || h == 0) m == 1 ? '1 minuto' : '$m minutos',
+      ];
+      buf.write('Tempo, ${parts.join(' e ')}. ');
+    }
+    if (s.sayPace) {
+      if (track!.activity.usesSpeed) {
         buf.write(
-            'Ritmo, ${p ~/ 60} minutos e ${(p % 60).round()} segundos por quilômetro.');
+            'Velocidade média, ${(avgSpeedMps * 3.6).round()} quilômetros por hora. ');
+      } else {
+        final p = pace;
+        if (p != null) {
+          buf.write(
+              'Ritmo, ${p ~/ 60} minutos e ${(p % 60).round()} segundos por quilômetro. ');
+        }
       }
     }
-    _say(buf.toString());
+    if (s.sayGain) {
+      buf.write('Subida, ${stats.elevation.gain.round()} metros. ');
+    }
+    final text = buf.toString().trim();
+    if (text.isNotEmpty) _say(text);
   }
 }

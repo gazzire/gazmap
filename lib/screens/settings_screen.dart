@@ -18,10 +18,82 @@ class SettingsScreen extends StatelessWidget {
             const _Header('Gravação'),
             SwitchListTile(
               title: const Text('Avisos por voz'),
-              subtitle: const Text('Distância, tempo e ritmo a cada km'),
+              subtitle: const Text('Ouça seu progresso sem tirar o celular do bolso'),
               value: s.voice,
               onChanged: s.setVoice,
             ),
+            if (s.voice) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(
+                        value: 'distance',
+                        icon: Icon(Icons.straighten),
+                        label: Text('Por distância')),
+                    ButtonSegment(
+                        value: 'time',
+                        icon: Icon(Icons.timer_outlined),
+                        label: Text('Por tempo')),
+                  ],
+                  selected: {s.voiceMode},
+                  onSelectionChanged: (v) => s.setVoiceMode(v.first),
+                ),
+              ),
+              ListTile(
+                title: const Text('Frequência'),
+                trailing: s.voiceMode == 'distance'
+                    ? DropdownButton<double>(
+                        value: Settings.voiceKmOptions.contains(s.voiceKm)
+                            ? s.voiceKm
+                            : 1.0,
+                        items: [
+                          for (final km in Settings.voiceKmOptions)
+                            DropdownMenuItem(
+                              value: km,
+                              child: Text(km < 1
+                                  ? 'A cada ${(km * 1000).round()} m'
+                                  : 'A cada ${km.round()} km'),
+                            ),
+                        ],
+                        onChanged: (v) => s.setVoiceKm(v!),
+                      )
+                    : DropdownButton<int>(
+                        value: Settings.voiceMinuteOptions
+                                .contains(s.voiceMinutes)
+                            ? s.voiceMinutes
+                            : 15,
+                        items: [
+                          for (final m in Settings.voiceMinuteOptions)
+                            DropdownMenuItem(
+                              value: m,
+                              child: Text(m == 60 ? 'A cada 1 hora' : 'A cada $m min'),
+                            ),
+                        ],
+                        onChanged: (v) => s.setVoiceMinutes(v!),
+                      ),
+              ),
+              CheckboxListTile(
+                title: const Text('Falar a distância'),
+                value: s.sayDistance,
+                onChanged: (v) => s.setSay('sayDistance', v!),
+              ),
+              CheckboxListTile(
+                title: const Text('Falar o tempo'),
+                value: s.sayTime,
+                onChanged: (v) => s.setSay('sayTime', v!),
+              ),
+              CheckboxListTile(
+                title: const Text('Falar o ritmo ou a velocidade'),
+                value: s.sayPace,
+                onChanged: (v) => s.setSay('sayPace', v!),
+              ),
+              CheckboxListTile(
+                title: const Text('Falar a subida acumulada'),
+                value: s.sayGain,
+                onChanged: (v) => s.setSay('sayGain', v!),
+              ),
+            ],
             SwitchListTile(
               title: const Text('Pausa automática'),
               subtitle: const Text('Indica quando você está parado'),

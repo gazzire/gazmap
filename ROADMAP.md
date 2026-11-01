@@ -45,7 +45,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 - GPS em segundo plano com notificação fixa, funcionando com a tela apagada
 - Distância, tempo em movimento, tempo total, ritmo/velocidade, subida e descida
 - Pausa manual e automática; **"segure para finalizar"** evita toque acidental no bolso
-- Avisos por voz a cada km
+- **Avisos por voz configuráveis:** por distância (500 m, 1, 2, 5, 10, 15 ou 20 km) ou por tempo (5, 10, 15, 30 ou 60 min), escolhendo o que é falado: distância, tempo, ritmo/velocidade e subida
 - Indicador de qualidade do GPS
 - Histórico com resumo do mês, tela de detalhes, perfil de altimetria e exportação GPX
 - **Escolha do lugar a baixar:** busca pelo nome (ex.: "Serra do Cipó") ou ajuste no mapa, com nível de detalhe
@@ -86,6 +86,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 - Confirma que os números estão certos e que a operadora entrega
 
 ### 👣 Contador de passos
+- Passos também como opção nos avisos por voz
 - Passos, cadência (passos/min) e comprimento médio da passada
 - Usa o sensor de passos do celular: offline e com baixo consumo de bateria
 - **Reserva quando o GPS falha** (vale fechado, mata densa) e pausa automática mais precisa
@@ -98,7 +99,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 ### 🏆 Melhor Volta (recordes pessoais)
 - **Reconhecimento automático** de trilhas repetidas (mesmo início, mesmo fim e caminho parecido)
 - Melhor tempo, média, última vez e medalhas (🥇🥈🥉)
-- **Corrida contra você mesmo ao vivo:** um "fantasma" do seu recorde no mapa, com "+1:20 atrás" ou "-0:45 à frente" e aviso por voz
+- **Corrida contra você mesmo ao vivo:** um "fantasma" do seu recorde no mapa, com "+1:20 atrás" ou "-0:45 à frente", também como opção nos avisos por voz
 - **Trechos favoritos** com recorde próprio (ex.: "a subida do mirante")
 - Recordes separados por atividade
 - **Só os seus próprios dados, tudo local**, sem rankings entre pessoas
