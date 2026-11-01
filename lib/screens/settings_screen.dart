@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/settings.dart';
+import '../widgets/powered_by.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -47,7 +48,7 @@ class SettingsScreen extends StatelessWidget {
             const _Header('Sobre'),
             const ListTile(
               leading: Icon(Icons.terrain),
-              title: Text('GAZMAP 0.1.0'),
+              title: Text('GAZMAP 0.1.0 · $poweredByText'),
               subtitle: Text(
                   'Software livre (GPL v3). Gratuito para sempre, sem anúncios '
                   'e sem conta. Seus dados ficam no seu celular.\n'
@@ -64,6 +65,10 @@ class SettingsScreen extends StatelessWidget {
               subtitle: Text(
                   'Se a gravação parar com a tela apagada, desative a otimização '
                   'de bateria para o GAZMAP nas configurações do Android.'),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: PoweredBy(),
             ),
           ],
         ),

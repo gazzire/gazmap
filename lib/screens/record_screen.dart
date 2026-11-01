@@ -8,6 +8,7 @@ import '../services/recorder.dart';
 import '../services/settings.dart';
 import '../utils/format.dart';
 import '../widgets/base_map.dart';
+import '../widgets/powered_by.dart';
 import 'track_detail_screen.dart';
 
 class RecordScreen extends StatefulWidget {
@@ -287,6 +288,8 @@ class _Panel extends StatelessWidget {
               child: const Text('INICIAR'),
             ),
           ),
+          const SizedBox(height: 12),
+          const PoweredBy(),
         ],
       );
     } else {

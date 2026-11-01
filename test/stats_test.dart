@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gazmap/models/track.dart';
 import 'package:gazmap/utils/format.dart';
 import 'package:gazmap/utils/geo.dart';
+import 'package:gazmap/widgets/powered_by.dart';
 
 void main() {
   test('haversine: 1 grau de latitude ≈ 111 km', () {
@@ -53,5 +54,9 @@ void main() {
   test('tiles: Belo Horizonte no zoom 10', () {
     expect(TileMath.lonToX(-43.94, 10), 387);
     expect(TileMath.latToY(-19.92, 10), 569);
+  });
+
+  test('atribuição de autoria preservada', () {
+    expect(poweredByText, 'POWERED BY GAZIRE');
   });
 }

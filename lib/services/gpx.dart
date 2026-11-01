@@ -16,7 +16,7 @@ String _esc(String s) => s
 String buildGpx(Track t, List<TrackPoint> points) {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-    ..writeln('<gpx version="1.1" creator="GAZMAP" '
+    ..writeln('<gpx version="1.1" creator="GAZMAP - POWERED BY GAZIRE" '
         'xmlns="http://www.topografix.com/GPX/1/1">')
     ..writeln('  <metadata><name>${_esc(t.name)}</name>'
         '<time>${t.startedAt.toUtc().toIso8601String()}</time></metadata>')

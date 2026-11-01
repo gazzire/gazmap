@@ -7,7 +7,8 @@ Obrigado por querer melhorar o GAZMAP!
 1. **Grátis para sempre.** Nenhum recurso pago, anúncio ou rastreamento.
 2. **Offline primeiro.** Todo recurso essencial precisa funcionar sem internet.
 3. **Seus dados são seus.** Nada sai do aparelho sem ação explícita do usuário.
-4. **Código limpo e original.** Não aceitamos código copiado de apps proprietários nem obtido por engenharia reversa de APIs privadas.
+4. **Atribuição preservada.** "POWERED BY GAZIRE" deve permanecer no app e na documentação (veja [NOTICE](NOTICE)).
+5. **Código limpo e original.** Não aceitamos código copiado de apps proprietários nem obtido por engenharia reversa de APIs privadas.
 
 ## Passo a passo
 

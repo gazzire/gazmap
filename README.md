@@ -1,5 +1,7 @@
 # GAZMAP 🥾
 
+**POWERED BY GAZIRE**
+
 **App de trilhas livre, gratuito e offline.** Grave caminhadas, trilhas, corridas e pedais com GPS, mesmo sem sinal de celular.
 
 > Sem assinatura, sem anúncios, sem conta obrigatória. Seus dados ficam no seu celular.
@@ -83,4 +85,6 @@ Os servidores gratuitos de mapas têm limites de uso. O GAZMAP limita o tamanho 
 
 ## Licença
 
-[GPL v3](LICENSE) © André Gazire e colaboradores.
+[GPL v3](LICENSE) © André Gazire e colaboradores. **POWERED BY GAZIRE.**
+
+Termo adicional (GPL v3, seção 7b): versões modificadas devem preservar a atribuição "POWERED BY GAZIRE" no app e na documentação. Detalhes no arquivo [NOTICE](NOTICE).

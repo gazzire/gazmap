@@ -1,5 +1,7 @@
 # GAZMAP — Roadmap
 
+**POWERED BY GAZIRE**
+
 App de trilhas **livre (GPL v3), gratuito e offline-first**.
 
 ## Princípios (nascidos das reclamações dos usuários de Strava, AllTrails, Komoot e similares)
