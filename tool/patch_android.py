@@ -51,3 +51,29 @@ for name in ("build.gradle", "build.gradle.kts"):
         f.write_text(s)
 
 print("Manifest e Gradle configurados.")
+
+# Ícone do app (idêntico ao logo do site; gerado por tool/generate_icons.py).
+import shutil
+icons = ROOT / "assets/icon"
+res = ROOT / "android/app/src/main/res"
+for d in ("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"):
+    target = res / f"mipmap-{d}"
+    target.mkdir(parents=True, exist_ok=True)
+    shutil.copy(icons / f"ic_launcher_{d}.png", target / "ic_launcher.png")
+    shutil.copy(icons / f"ic_launcher_foreground_{d}.png", target / "ic_launcher_foreground.png")
+anydpi = res / "mipmap-anydpi-v26"
+anydpi.mkdir(parents=True, exist_ok=True)
+(anydpi / "ic_launcher.xml").write_text(
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+    '    <background android:drawable="@color/ic_launcher_background"/>\n'
+    '    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n'
+    '</adaptive-icon>\n'
+)
+values = res / "values"
+values.mkdir(parents=True, exist_ok=True)
+(values / "ic_launcher_background.xml").write_text(
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<resources>\n    <color name="ic_launcher_background">#FF6B1A</color>\n</resources>\n'
+)
+print("Ícone do app configurado.")
