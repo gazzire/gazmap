@@ -27,7 +27,7 @@ class GazmapApp extends StatelessWidget {
       useMaterial3: true,
       colorScheme: scheme,
       visualDensity: VisualDensity.standard,
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),

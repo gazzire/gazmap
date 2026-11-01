@@ -36,7 +36,7 @@ Veja o que vem depois no [ROADMAP](ROADMAP.md).
 
 ## Desenvolver
 
-Requisitos: [Flutter 3.24+](https://docs.flutter.dev/get-started/install) e JDK 17.
+Requisitos: [Flutter (stable mais recente)](https://docs.flutter.dev/get-started/install) e JDK 17.
 
 ```bash
 git clone https://github.com/gazzire/gazmap.git

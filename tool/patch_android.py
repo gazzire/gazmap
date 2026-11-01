@@ -41,13 +41,13 @@ for name in ("settings.gradle", "settings.gradle.kts"):
         s = re.sub(r'(org\.jetbrains\.kotlin\.android"\)?\s*version\s*")1\.[0-8]\.\d+', r"\g<1>1.9.24", s)
         f.write_text(s)
 
-# compileSdk 35 (exigido por versões recentes de alguns plugins).
+# compileSdk 36 (exigido por versões recentes de alguns plugins).
 for name in ("build.gradle", "build.gradle.kts"):
     f = ROOT / "android/app" / name
     if f.exists():
         s = f.read_text()
-        s = s.replace("compileSdk = flutter.compileSdkVersion", "compileSdk = 35")
-        s = s.replace("compileSdkVersion flutter.compileSdkVersion", "compileSdkVersion 35")
+        s = s.replace("compileSdk = flutter.compileSdkVersion", "compileSdk = 36")
+        s = s.replace("compileSdkVersion flutter.compileSdkVersion", "compileSdkVersion 36")
         f.write_text(s)
 
 print("Manifest e Gradle configurados.")
