@@ -52,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
               subtitle: Text(
                   'Software livre (GPL v3). Gratuito para sempre, sem anúncios '
                   'e sem conta. Seus dados ficam no seu celular.\n'
-                  'github.com/gazzire/gazmap'),
+                  'gazire.com.br/gazmap'),
             ),
             const ListTile(
               leading: Icon(Icons.map_outlined),

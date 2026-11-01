@@ -1,6 +1,6 @@
 # GAZMAP 🥾
 
-**POWERED BY GAZIRE**
+**POWERED BY GAZIRE** · Site oficial: [gazire.com.br/gazmap](https://www.gazire.com.br/gazmap)
 
 **App de trilhas livre, gratuito e offline.** Grave caminhadas, trilhas, corridas e pedais com GPS, mesmo sem sinal de celular.
 
@@ -28,7 +28,7 @@ Veja o que vem depois no [ROADMAP](ROADMAP.md).
 
 ## Instalar (Android)
 
-1. Abra a aba [Releases](https://github.com/gazzire/gazmap/releases) e baixe `gazmap.apk`
+1. Acesse [gazire.com.br/gazmap](https://www.gazire.com.br/gazmap) e toque em **Baixar para Android** (ou baixe `gazmap.apk` em [Releases](https://github.com/gazzire/gazmap/releases))
 2. No celular, permita "instalar apps de fontes desconhecidas"
 3. Abra o GAZMAP e permita a localização
 
