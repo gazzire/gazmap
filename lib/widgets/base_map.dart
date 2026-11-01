@@ -14,8 +14,23 @@ List<Widget> baseMapLayers(MapStyle style) => [
       ),
     ];
 
-Widget mapAttribution(MapStyle style) => SimpleAttributionWidget(
-      source: Text(style.attribution, style: const TextStyle(fontSize: 11)),
+/// Crédito obrigatório dos dados de mapa, compacto e legível.
+Widget mapAttribution(MapStyle style,
+        {Alignment alignment = Alignment.bottomRight}) =>
+    Align(
+      alignment: alignment,
+      child: Container(
+        margin: const EdgeInsets.all(6),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.75),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          style.attribution,
+          style: const TextStyle(fontSize: 9, color: Colors.black87),
+        ),
+      ),
     );
 
 /// Marcador da posição atual.

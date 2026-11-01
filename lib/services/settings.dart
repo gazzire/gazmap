@@ -24,7 +24,7 @@ class MapStyle {
     name: 'Topográfico (curvas de nível)',
     url: 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
     maxNativeZoom: 17,
-    attribution: '© OpenStreetMap · SRTM · OpenTopoMap (CC-BY-SA)',
+    attribution: '© OpenStreetMap · OpenTopoMap',
   );
 
   static const osm = MapStyle(

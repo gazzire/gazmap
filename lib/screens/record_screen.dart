@@ -173,8 +173,13 @@ class _RecordScreenState extends State<RecordScreen> {
                       child: const PositionDot(),
                     ),
                   ]),
-                mapAttribution(style),
               ],
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 58),
+                child: mapAttribution(style, alignment: Alignment.topRight),
+              ),
             ),
             SafeArea(
               child: Padding(
@@ -257,38 +262,21 @@ class _Panel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
           ],
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final a in Activity.values)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ChoiceChip(
-                      avatar: Icon(a.icon, size: 20),
-                      label: Text(a.label),
-                      selected: settings.activity == a,
-                      onSelected: (_) => settings.setActivity(a),
-                    ),
+          Row(
+            children: [
+              for (final a in Activity.values)
+                Expanded(
+                  child: _ActivityOption(
+                    activity: a,
+                    selected: settings.activity == a,
+                    onTap: () => settings.setActivity(a),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: 112,
-            height: 112,
-            child: FilledButton(
-              onPressed: onStart,
-              style: FilledButton.styleFrom(
-                shape: const CircleBorder(),
-                textStyle: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800),
-              ),
-              child: const Text('INICIAR'),
-            ),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
+          _StartButton(onTap: onStart),
+          const SizedBox(height: 14),
           const PoweredBy(),
         ],
       );
@@ -459,6 +447,103 @@ class _StatusChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(text, style: Theme.of(context).textTheme.labelMedium),
           ]),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActivityOption extends StatelessWidget {
+  const _ActivityOption({
+    required this.activity,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Activity activity;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fg = selected ? Colors.white : scheme.onSurface;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Material(
+        color: selected ? scheme.primary : Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: selected ? scheme.primary : scheme.outlineVariant,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(activity.icon, size: 26, color: selected ? fg : scheme.primary),
+                const SizedBox(height: 4),
+                Text(
+                  activity.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: fg,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StartButton extends StatelessWidget {
+  const _StartButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.primary,
+      shape: const CircleBorder(),
+      elevation: 4,
+      shadowColor: scheme.primary.withOpacity(0.5),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: const SizedBox(
+          width: 108,
+          height: 108,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.play_arrow_rounded, size: 46, color: Colors.white),
+              Text(
+                'INICIAR',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

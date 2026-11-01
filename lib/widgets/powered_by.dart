@@ -12,11 +12,12 @@ class PoweredBy extends StatelessWidget {
     return Text(
       poweredByText,
       textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            letterSpacing: 2,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+      style: TextStyle(
+        fontSize: 8.5,
+        letterSpacing: 1.6,
+        fontWeight: FontWeight.w600,
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.55),
+      ),
     );
   }
 }
