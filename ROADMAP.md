@@ -39,7 +39,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 
 ---
 
-## v0.1 — Gravação e mapas offline ✅ (código pronto, aguardando a primeira compilação)
+## v0.1 — Gravação e mapas offline ✅ (publicada em 01/11/2026)
 
 - **Escolha da atividade:** Trilha, Caminhada, Corrida e Bike, cada uma com limiar de movimento e métrica própria (ritmo em min/km ou velocidade em km/h)
 - GPS em segundo plano com notificação fixa, funcionando com a tela apagada
@@ -52,7 +52,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 - Mapa topográfico (curvas de nível), mapa de ruas ou servidor próprio
 - Recuperação automática da atividade se o app fechar
 
-**Para concluir:** criar o repositório público `gazzire/gazmap`, liberar o acesso do Claude, compilar no GitHub Actions, corrigir os erros e instalar no celular.
+**Status:** compilada pelo GitHub Actions e publicada em [Releases](https://github.com/gazzire/gazmap/releases/tag/v0.1.0). Próximo passo: instalar e testar em uma trilha real.
 
 ---
 
