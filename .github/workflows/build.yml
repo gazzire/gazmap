@@ -50,7 +50,9 @@ jobs:
 
       - name: Versão do app
         id: ver
-        run: echo "tag=v$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> "$GITHUB_OUTPUT"
+        run: |
+          V=$(grep '^version:' pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f1)
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
 
       # Publica (ou atualiza) a versão do pubspec a cada push na main.
       # O link .../releases/latest/download/gazmap.apk sempre aponta para ela.
