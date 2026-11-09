@@ -180,7 +180,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                     Polyline(
                                         points: l,
                                         strokeWidth: 4,
-                                        color: const Color(0xFFFF3D00).withOpacity(0.35)),
+                                        color: const Color(0xFFFF3D00).withValues(alpha: 0.35)),
                               ]),
                               mapAttribution(style),
                             ],

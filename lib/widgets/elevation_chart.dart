@@ -83,7 +83,7 @@ class _ElevationPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [line.withOpacity(0.45), line.withOpacity(0.02)],
+          colors: [line.withValues(alpha: 0.45), line.withValues(alpha: 0.02)],
         ).createShader(Offset.zero & size),
     );
     canvas.drawPath(

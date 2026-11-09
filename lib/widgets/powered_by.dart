@@ -16,7 +16,7 @@ class PoweredBy extends StatelessWidget {
         fontSize: 8.5,
         letterSpacing: 1.6,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.55),
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
       ),
     );
   }

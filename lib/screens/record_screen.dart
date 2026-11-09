@@ -226,7 +226,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     Polyline(
                       points: RouteNavigator.instance.points,
                       strokeWidth: 7,
-                      color: const Color(0xFF1E88E5).withOpacity(0.75),
+                      color: const Color(0xFF1E88E5).withValues(alpha: 0.75),
                     ),
                   ]),
                 PolylineLayer(
@@ -271,7 +271,7 @@ class _RecordScreenState extends State<RecordScreen> {
                       height: 22,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.8),
+                          color: Colors.grey.withValues(alpha: 0.8),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -542,7 +542,7 @@ class _Panel extends StatelessWidget {
       top: false,
       child: Card(
         margin: const EdgeInsets.all(12),
-        color: scheme.surface.withOpacity(0.96),
+        color: scheme.surface.withValues(alpha: 0.96),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           child: SizedBox(width: double.infinity, child: body),
@@ -627,7 +627,7 @@ class _StatusChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 6),
       child: Material(
-        color: scheme.surface.withOpacity(0.92),
+        color: scheme.surface.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(20),
         elevation: 2,
         child: Padding(
@@ -710,7 +710,7 @@ class _StartButton extends StatelessWidget {
       color: scheme.primary,
       shape: const CircleBorder(),
       elevation: 4,
-      shadowColor: scheme.primary.withOpacity(0.5),
+      shadowColor: scheme.primary.withValues(alpha: 0.5),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
