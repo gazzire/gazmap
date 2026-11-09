@@ -97,5 +97,5 @@ Entregue numa única versão (antes planejado como v0.2 a v0.5):
 ## Fora do escopo (decisões conscientes)
 
 - **Engenharia reversa da API privada do Strava:** viola os termos de uso, expõe o repositório a remoção e não é necessária. Os algoritmos (distância, altimetria, ritmo) são conhecimento público e foram implementados do zero
-- **Rankings entre pessoas e segmentos ao estilo Strava:** exigem servidor central e têm risco de patente. Os recordes do GAZMAP são só pessoais e locais
+- **Rankings públicos globais e segmentos ao estilo Strava:** exigem servidor central e têm risco de patente. Os recordes do GAZMAP são pessoais, e o ranking do Modo Grupo acontece só entre celulares próximos, sem servidor
 - Anúncios, rastreamento de usuários e conta obrigatória
