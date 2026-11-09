@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -40,6 +42,13 @@ class _RecordScreenState extends State<RecordScreen> {
 
   /// Mapa gira para a direção em que você está virado (como app de carro).
   bool _headingUp = false;
+
+  /// Preferência de giro guardada enquanto o mapa está solto.
+  bool _headingPref = false;
+
+  /// Volta a centralizar sozinho alguns segundos depois de arrastar o mapa.
+  Timer? _recenterTimer;
+  final _panelKey = GlobalKey();
   String? _permError;
   final List<Waypoint> _waypoints = [];
 
@@ -62,6 +71,7 @@ class _RecordScreenState extends State<RecordScreen> {
     HeadingService.instance
       ..removeListener(_onRecorder)
       ..detach();
+    _recenterTimer?.cancel();
     super.dispose();
   }
 
@@ -86,17 +96,55 @@ class _RecordScreenState extends State<RecordScreen> {
   void _openSos() => Navigator.of(context)
       .push(MaterialPageRoute(builder: (_) => const SosScreen()));
 
+  /// Arrastar solta o mapa; zoom (pinça, toque duplo) mantém a centralização.
+  void _onMapEvent(MapEvent e) {
+    switch (e.source) {
+      case MapEventSource.dragStart:
+      case MapEventSource.onDrag:
+        if (_follow) {
+          setState(() {
+            _headingPref = _headingUp;
+            _follow = false;
+            _headingUp = false;
+          });
+        }
+        _scheduleRecenter();
+      case MapEventSource.dragEnd:
+        _scheduleRecenter();
+      case MapEventSource.multiFingerEnd:
+      case MapEventSource.doubleTapZoomAnimationController:
+      case MapEventSource.scrollWheel:
+        if (_follow) _onRecorder();
+      default:
+        break;
+    }
+  }
+
+  void _scheduleRecenter() {
+    _recenterTimer?.cancel();
+    _recenterTimer = Timer(const Duration(seconds: 8), () {
+      if (!mounted || _follow) return;
+      setState(() {
+        _follow = true;
+        _headingUp = _headingPref;
+      });
+      _onRecorder();
+    });
+  }
+
   /// Alterna: livre → seguir (norte para cima) → seguir na direção → norte.
   void _cycleMapMode() {
     setState(() {
+      _recenterTimer?.cancel();
       if (!_follow) {
         _follow = true;
-        _headingUp = false;
+        _headingUp = _headingPref;
       } else if (!_headingUp) {
         _headingUp = true;
       } else {
         _headingUp = false;
       }
+      _headingPref = _headingUp;
     });
     if (!_headingUp && _mapReady) {
       _map.rotate(0);
@@ -151,11 +199,18 @@ class _RecordScreenState extends State<RecordScreen> {
     final zoom = _map.camera.zoom < 14 ? 16.0 : _map.camera.zoom;
     final center = LatLng(pos.latitude, pos.longitude);
     final h = HeadingService.instance.heading;
+    // Centro da área VISÍVEL do mapa (acima do painel de baixo).
+    final mapH = _map.camera.nonRotatedSize.y;
+    final panelH = (_panelKey.currentContext?.size?.height ?? 0).clamp(0.0, mapH * 0.7);
+    var dy = -panelH / 2;
     if (_headingUp && h != null) {
-      _map.moveAndRotate(center, zoom, -h);
-    } else {
-      _map.move(center, zoom);
+      // Seta um pouco abaixo do centro, para mostrar mais do caminho à frente.
+      dy += (mapH - panelH) * 0.18;
+      if ((_map.camera.rotation + h).abs() > 0.5) _map.rotate(-h);
+    } else if (!_headingUp && _map.camera.rotation != 0) {
+      _map.rotate(0);
     }
+    _map.move(center, zoom, offset: Offset(0, dy));
   }
 
   Future<void> _start() async {
@@ -314,14 +369,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 initialZoom: pos == null ? 5 : 16,
                 maxZoom: 19,
                 onMapReady: () => _mapReady = true,
-                onPositionChanged: (camera, hasGesture) {
-                  if (hasGesture && _follow) {
-                    setState(() {
-                      _follow = false;
-                      _headingUp = false;
-                    });
-                  }
-                },
+                onMapEvent: _onMapEvent,
               ),
               children: [
                 ...baseMapLayers(style),
@@ -496,7 +544,9 @@ class _RecordScreenState extends State<RecordScreen> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: _view == 'map'
+              child: KeyedSubtree(
+                key: _panelKey,
+                child: _view == 'map'
                   ? (_rec.active
                       ? _CompactStrip(onFinish: _finish)
                       : _CompactIdle(onStart: _start))
@@ -510,6 +560,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     : _initGps,
                 onStart: _start,
                 onFinish: _finish,
+              ),
               ),
             ),
           ],

@@ -177,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
             const _Header('Sobre'),
             const ListTile(
               leading: Icon(Icons.terrain),
-              title: Text('GAZMAP 0.3.2 · $poweredByText'),
+              title: Text('GAZMAP 0.3.3 · $poweredByText'),
               subtitle: Text(
                   'Software livre (GPL v3). Gratuito para sempre, sem anúncios '
                   'e sem conta. Seus dados ficam no seu celular.\n'
