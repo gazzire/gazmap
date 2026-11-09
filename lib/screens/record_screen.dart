@@ -7,6 +7,7 @@ import '../models/extra.dart';
 import '../models/track.dart';
 import '../services/database.dart';
 import '../services/group.dart';
+import '../services/heading.dart';
 import '../services/live.dart';
 import '../services/navigation.dart';
 import '../services/recorder.dart';
@@ -35,6 +36,9 @@ class _RecordScreenState extends State<RecordScreen> {
   final _settings = Settings.instance;
   bool _mapReady = false;
   bool _follow = true;
+
+  /// Mapa gira para a direção em que você está virado (como app de carro).
+  bool _headingUp = false;
   String? _permError;
   final List<Waypoint> _waypoints = [];
 
@@ -45,13 +49,70 @@ class _RecordScreenState extends State<RecordScreen> {
   void initState() {
     super.initState();
     _rec.addListener(_onRecorder);
+    HeadingService.instance
+      ..attach()
+      ..addListener(_onRecorder);
     _initGps();
   }
 
   @override
   void dispose() {
     _rec.removeListener(_onRecorder);
+    HeadingService.instance
+      ..removeListener(_onRecorder)
+      ..detach();
     super.dispose();
+  }
+
+  /// Alterna: livre → seguir (norte para cima) → seguir na direção → norte.
+  void _cycleMapMode() {
+    setState(() {
+      if (!_follow) {
+        _follow = true;
+        _headingUp = false;
+      } else if (!_headingUp) {
+        _headingUp = true;
+      } else {
+        _headingUp = false;
+      }
+    });
+    if (!_headingUp && _mapReady) {
+      _map.rotate(0);
+    }
+    _onRecorder();
+  }
+
+  Future<void> _chooseMapStyle() async {
+    final s = _settings;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: ListenableBuilder(
+          listenable: s,
+          builder: (ctx, _) => Column(mainAxisSize: MainAxisSize.min, children: [
+            const ListTile(
+              title: Text('Tipo de mapa', style: TextStyle(fontWeight: FontWeight.w800)),
+              subtitle: Text('Os mapas offline são baixados por tipo. Ao trocar, '
+                  'baixe de novo as áreas que vai usar sem internet.'),
+            ),
+            for (final (id, name, icon) in [
+              ('topo', 'Topográfico (curvas de nível)', Icons.terrain),
+              ('osm', 'Ruas (OpenStreetMap)', Icons.map),
+              if (s.customUrl.contains('{z}')) ('custom', 'Servidor próprio', Icons.dns),
+            ])
+              ListTile(
+                leading: Icon(icon),
+                title: Text(name),
+                trailing: s.styleId == id ? const Icon(Icons.check_circle, color: Color(0xFF22C55E)) : null,
+                onTap: () {
+                  s.setStyle(id);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ]),
+        ),
+      ),
+    );
   }
 
   Future<void> _initGps() async {
@@ -65,7 +126,13 @@ class _RecordScreenState extends State<RecordScreen> {
     final pos = _rec.position;
     if (!_follow || !_mapReady || pos == null) return;
     final zoom = _map.camera.zoom < 14 ? 16.0 : _map.camera.zoom;
-    _map.move(LatLng(pos.latitude, pos.longitude), zoom);
+    final center = LatLng(pos.latitude, pos.longitude);
+    final h = HeadingService.instance.heading;
+    if (_headingUp && h != null) {
+      _map.moveAndRotate(center, zoom, -h);
+    } else {
+      _map.move(center, zoom);
+    }
   }
 
   Future<void> _start() async {
@@ -200,6 +267,7 @@ class _RecordScreenState extends State<RecordScreen> {
         RouteNavigator.instance,
         GroupService.instance,
         LiveShare.instance,
+        HeadingService.instance,
       ]),
       builder: (context, _) {
         final style = _settings.style;
@@ -216,7 +284,12 @@ class _RecordScreenState extends State<RecordScreen> {
                 maxZoom: 19,
                 onMapReady: () => _mapReady = true,
                 onPositionChanged: (camera, hasGesture) {
-                  if (hasGesture && _follow) setState(() => _follow = false);
+                  if (hasGesture && _follow) {
+                    setState(() {
+                      _follow = false;
+                      _headingUp = false;
+                    });
+                  }
                 },
               ),
               children: [
@@ -246,6 +319,7 @@ class _RecordScreenState extends State<RecordScreen> {
                   for (final w in _waypoints)
                     Marker(
                       point: w.latLng,
+                      rotate: true,
                       width: 30,
                       height: 30,
                       child: Text(w.kind.emoji, style: const TextStyle(fontSize: 22)),
@@ -254,6 +328,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     if (m.pos != null)
                       Marker(
                         point: m.pos!,
+                        rotate: true,
                         width: 90,
                         height: 44,
                         child: Column(children: [
@@ -280,9 +355,9 @@ class _RecordScreenState extends State<RecordScreen> {
                   if (pos != null)
                     Marker(
                       point: LatLng(pos.latitude, pos.longitude),
-                      width: 24,
-                      height: 24,
-                      child: const PositionDot(),
+                      width: 40,
+                      height: 40,
+                      child: HeadingArrow(heading: HeadingService.instance.heading),
                     ),
                 ]),
               ],
@@ -330,16 +405,7 @@ class _RecordScreenState extends State<RecordScreen> {
                           const _StatusChip(icon: Icons.podcasts, text: 'Ao vivo', color: Colors.red),
                       ]),
                     ),
-                    if (!_follow)
-                      FloatingActionButton.small(
-                        heroTag: 'recenter',
-                        onPressed: () {
-                          setState(() => _follow = true);
-                          _onRecorder();
-                        },
-                        child: const Icon(Icons.my_location),
-                      ),
-                  ],
+],
                 ),
               ),
             ),
@@ -348,7 +414,8 @@ class _RecordScreenState extends State<RecordScreen> {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 92, right: 12),
-                  child: FloatingActionButton(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    FloatingActionButton(
                     heroTag: 'sos',
                     backgroundColor: const Color(0xFFE5484D),
                     foregroundColor: Colors.white,
@@ -356,6 +423,31 @@ class _RecordScreenState extends State<RecordScreen> {
                         .push(MaterialPageRoute(builder: (_) => const SosScreen())),
                     child: const Text('SOS', style: TextStyle(fontWeight: FontWeight.w900)),
                   ),
+                    const SizedBox(height: 10),
+                    FloatingActionButton.small(
+                      heroTag: 'layers',
+                      tooltip: 'Tipo de mapa',
+                      onPressed: _chooseMapStyle,
+                      child: const Icon(Icons.layers),
+                    ),
+                    const SizedBox(height: 6),
+                    FloatingActionButton.small(
+                      heroTag: 'mode',
+                      tooltip: !_follow
+                          ? 'Centralizar em mim'
+                          : _headingUp
+                              ? 'Norte para cima'
+                              : 'Girar mapa na direção',
+                      backgroundColor: _headingUp ? const Color(0xFF1E88E5) : null,
+                      foregroundColor: _headingUp ? Colors.white : null,
+                      onPressed: _cycleMapMode,
+                      child: Icon(!_follow
+                          ? Icons.my_location
+                          : _headingUp
+                              ? Icons.navigation
+                              : Icons.explore),
+                    ),
+                  ]),
                 ),
               ),
             ),

@@ -7,6 +7,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.GeomagneticField
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
@@ -22,6 +27,7 @@ import android.os.VibratorManager
 import android.telephony.SmsManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 /**
@@ -32,9 +38,25 @@ class MainActivity : FlutterActivity() {
     private var tone: ToneGenerator? = null
     private var pickResult: MethodChannel.Result? = null
     private val pickCode = 4242
+    private var headingSink: EventChannel.EventSink? = null
+    private var headingListener: SensorEventListener? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Bússola: direção para onde o celular aponta (graus, norte magnético).
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "gazmap/heading")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(args: Any?, sink: EventChannel.EventSink?) {
+                    headingSink = sink
+                    startHeading()
+                }
+
+                override fun onCancel(args: Any?) {
+                    stopHeading()
+                    headingSink = null
+                }
+            })
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "gazmap/native")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -70,6 +92,13 @@ class MainActivity : FlutterActivity() {
                             }
                             startActivityForResult(intent, pickCode)
                         }
+                    }
+                    "declination" -> {
+                        val lat = call.argument<Double>("lat") ?: 0.0
+                        val lon = call.argument<Double>("lon") ?: 0.0
+                        val alt = call.argument<Double>("alt") ?: 0.0
+                        val f = GeomagneticField(lat.toFloat(), lon.toFloat(), alt.toFloat(), System.currentTimeMillis())
+                        result.success(f.declination.toDouble())
                     }
                     else -> result.notImplemented()
                 }
@@ -132,6 +161,41 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             result.error("SMS", e.message, null)
         }
+    }
+
+    private fun startHeading() {
+        val sm = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) ?: return
+        val r = FloatArray(9)
+        val o = FloatArray(3)
+        var last = -1000.0
+        var lastAt = 0L
+        val l = object : SensorEventListener {
+            override fun onSensorChanged(e: SensorEvent) {
+                SensorManager.getRotationMatrixFromVector(r, e.values)
+                SensorManager.getOrientation(r, o)
+                var deg = Math.toDegrees(o[0].toDouble())
+                if (deg < 0) deg += 360.0
+                val now = System.currentTimeMillis()
+                var diff = Math.abs(deg - last)
+                if (diff > 180) diff = 360 - diff
+                if (diff >= 1.0 && now - lastAt >= 60) {
+                    last = deg
+                    lastAt = now
+                    headingSink?.success(deg)
+                }
+            }
+
+            override fun onAccuracyChanged(s: Sensor?, a: Int) {}
+        }
+        headingListener = l
+        sm.registerListener(l, sensor, SensorManager.SENSOR_DELAY_UI)
+    }
+
+    private fun stopHeading() {
+        val l = headingListener ?: return
+        (getSystemService(Context.SENSOR_SERVICE) as SensorManager).unregisterListener(l)
+        headingListener = null
     }
 
     private fun torch(on: Boolean): Boolean {
@@ -210,6 +274,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        stopHeading()
         tone?.release()
         tone = null
         super.onDestroy()

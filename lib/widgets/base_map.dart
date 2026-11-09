@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -90,6 +92,33 @@ class StatTile extends StatelessWidget {
         ),
         Text(label, style: t.labelMedium?.copyWith(color: muted)),
       ],
+    );
+  }
+}
+
+/// Seta da posição que gira conforme a direção (bússola ou GPS).
+/// Sem direção conhecida, mostra o ponto azul.
+class HeadingArrow extends StatelessWidget {
+  const HeadingArrow({super.key, required this.heading});
+
+  final double? heading;
+
+  @override
+  Widget build(BuildContext context) {
+    final h = heading;
+    if (h == null) {
+      return const Center(child: SizedBox(width: 24, height: 24, child: PositionDot()));
+    }
+    return Transform.rotate(
+      angle: h * math.pi / 180,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black38)],
+        ),
+        child: const Icon(Icons.navigation, color: Color(0xFF1E88E5), size: 34),
+      ),
     );
   }
 }

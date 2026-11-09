@@ -1,7 +1,7 @@
 name: gazmap
 description: "GAZMAP — app de trilhas livre e aberto: grave suas atividades com GPS, online e offline."
 publish_to: 'none'
-version: 0.2.0+4
+version: 0.2.1+5
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
