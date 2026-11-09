@@ -156,6 +156,7 @@ class _DownloadAreaScreenState extends State<DownloadAreaScreen> {
     final pos = Recorder.instance.position;
     final tiles = _tiles;
     final tooBig = tiles > maxTiles;
+    final blocked = !style.allowOffline;
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -264,6 +265,15 @@ class _DownloadAreaScreenState extends State<DownloadAreaScreen> {
                     ),
                     Text(_zoomLabel(_maxZoom)),
                   ]),
+                  if (blocked)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        'O satélite não pode ser baixado para uso offline (regra do provedor). '
+                        'Troque para Topográfico ou Ruas para baixar.',
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
                   Text(
                     tooBig
                         ? 'Área grande demais ($tiles blocos). Aproxime o mapa ou reduza o detalhe.'
@@ -272,7 +282,7 @@ class _DownloadAreaScreenState extends State<DownloadAreaScreen> {
                   ),
                   const SizedBox(height: 8),
                   FilledButton.icon(
-                    onPressed: tooBig || tiles == 0 ? null : _download,
+                    onPressed: blocked || tooBig || tiles == 0 ? null : _download,
                     icon: const Icon(Icons.download),
                     label: Text(_placeName.isEmpty
                         ? 'Baixar área visível'

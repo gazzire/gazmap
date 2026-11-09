@@ -158,7 +158,7 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             const _Header('Mapa'),
-            for (final st in [MapStyle.topo, MapStyle.osm])
+            for (final st in [MapStyle.topo, MapStyle.osm, MapStyle.satellite])
               RadioListTile<String>(
                 title: Text(st.name),
                 value: st.id,
@@ -177,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
             const _Header('Sobre'),
             const ListTile(
               leading: Icon(Icons.terrain),
-              title: Text('GAZMAP 0.2.1 · $poweredByText'),
+              title: Text('GAZMAP 0.2.2 · $poweredByText'),
               subtitle: Text(
                   'Software livre (GPL v3). Gratuito para sempre, sem anúncios '
                   'e sem conta. Seus dados ficam no seu celular.\n'

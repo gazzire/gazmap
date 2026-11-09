@@ -98,6 +98,7 @@ class _RecordScreenState extends State<RecordScreen> {
             for (final (id, name, icon) in [
               ('topo', 'Topográfico (curvas de nível)', Icons.terrain),
               ('osm', 'Ruas (OpenStreetMap)', Icons.map),
+              ('sat', 'Satélite (só com internet)', Icons.satellite_alt),
               if (s.customUrl.contains('{z}')) ('custom', 'Servidor próprio', Icons.dns),
             ])
               ListTile(

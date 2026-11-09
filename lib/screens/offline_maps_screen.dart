@@ -173,7 +173,9 @@ class _OfflineMapsScreenState extends State<OfflineMapsScreen> {
               subtitle: const Text(
                   'O estado inteiro em visão geral (~100 MB). Para o detalhe das trilhas, '
                   'baixe a área da trilha ou o entorno de uma rota.'),
-              trailing: FilledButton(onPressed: _downloadMg, child: const Text('Baixar')),
+              trailing: FilledButton(
+                  onPressed: Settings.instance.style.allowOffline ? _downloadMg : null,
+                  child: const Text('Baixar')),
             ),
           ),
           if (_regions.isEmpty)

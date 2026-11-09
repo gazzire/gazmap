@@ -11,6 +11,7 @@ class MapStyle {
     required this.url,
     required this.maxNativeZoom,
     required this.attribution,
+    this.allowOffline = true,
   });
 
   final String id;
@@ -18,6 +19,9 @@ class MapStyle {
   final String url;
   final int maxNativeZoom;
   final String attribution;
+
+  /// false = o provedor não permite baixar áreas para uso offline.
+  final bool allowOffline;
 
   static const topo = MapStyle(
     id: 'topo',
@@ -33,6 +37,17 @@ class MapStyle {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     maxNativeZoom: 19,
     attribution: '© OpenStreetMap',
+  );
+
+  /// Imagens de satélite (Esri World Imagery). Só online: o provedor não
+  /// permite baixar áreas inteiras para uso offline.
+  static const satellite = MapStyle(
+    id: 'sat',
+    name: 'Satélite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    maxNativeZoom: 18,
+    attribution: 'Imagens © Esri, Maxar, Earthstar Geographics',
+    allowOffline: false,
   );
 
   static MapStyle custom(String url) => MapStyle(
@@ -124,6 +139,8 @@ class Settings extends ChangeNotifier {
     switch (_styleId) {
       case 'osm':
         return MapStyle.osm;
+      case 'sat':
+        return MapStyle.satellite;
       case 'custom':
         return customUrl.contains('{z}')
             ? MapStyle.custom(customUrl)
