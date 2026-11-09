@@ -459,3 +459,28 @@ Future<void> shareRoute(SavedRoute r, FileFormat f) async {
   await file.writeAsString(f == FileFormat.tcx ? buildTcxCourse(r) : buildRouteGpx(r));
   await Share.shareXFiles([XFile(file.path)], subject: r.name);
 }
+
+/// Exporta várias atividades de uma vez (um arquivo por trilha).
+Future<void> shareActivities(List<(Track, List<TrackPoint>)> items, FileFormat f) async {
+  if (items.length == 1) return shareActivity(items.first.$1, items.first.$2, f);
+  final dir = await getTemporaryDirectory();
+  final files = <XFile>[];
+  final used = <String>{};
+  for (final (t, pts) in items) {
+    var safe = t.name.replaceAll(RegExp(r'[^\w\-]+'), '_');
+    while (!used.add(safe)) {
+      safe = '${safe}_${used.length}';
+    }
+    final file = File(p.join(dir.path, '$safe.${f.ext}'));
+    switch (f) {
+      case FileFormat.gpx:
+        await file.writeAsString(buildGpx(t, pts));
+      case FileFormat.tcx:
+        await file.writeAsString(buildTcx(t, pts));
+      case FileFormat.fit:
+        await file.writeAsBytes(buildFit(t, pts));
+    }
+    files.add(XFile(file.path, mimeType: f.mime));
+  }
+  await Share.shareXFiles(files, subject: 'Trilhas do GAZMAP');
+}

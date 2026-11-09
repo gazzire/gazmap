@@ -165,31 +165,63 @@ class MainActivity : FlutterActivity() {
 
     private fun startHeading() {
         val sm = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val sensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) ?: return
+        val rotation = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val accel = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val magnet = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
         val r = FloatArray(9)
         val o = FloatArray(3)
+        val grav = FloatArray(3)
+        val geo = FloatArray(3)
+        var hasGrav = false
+        var hasGeo = false
         var last = -1000.0
         var lastAt = 0L
+
+        fun emit() {
+            SensorManager.getOrientation(r, o)
+            var deg = Math.toDegrees(o[0].toDouble())
+            if (deg < 0) deg += 360.0
+            val now = System.currentTimeMillis()
+            var diff = Math.abs(deg - last)
+            if (diff > 180) diff = 360 - diff
+            if (diff >= 1.0 && now - lastAt >= 60) {
+                last = deg
+                lastAt = now
+                headingSink?.success(deg)
+            }
+        }
+
         val l = object : SensorEventListener {
             override fun onSensorChanged(e: SensorEvent) {
-                SensorManager.getRotationMatrixFromVector(r, e.values)
-                SensorManager.getOrientation(r, o)
-                var deg = Math.toDegrees(o[0].toDouble())
-                if (deg < 0) deg += 360.0
-                val now = System.currentTimeMillis()
-                var diff = Math.abs(deg - last)
-                if (diff > 180) diff = 360 - diff
-                if (diff >= 1.0 && now - lastAt >= 60) {
-                    last = deg
-                    lastAt = now
-                    headingSink?.success(deg)
+                when (e.sensor.type) {
+                    Sensor.TYPE_ROTATION_VECTOR -> {
+                        SensorManager.getRotationMatrixFromVector(r, e.values)
+                        emit()
+                    }
+                    // Celulares sem giroscópio: acelerômetro + magnetômetro (filtrados).
+                    Sensor.TYPE_ACCELEROMETER -> {
+                        for (i in 0..2) grav[i] = if (hasGrav) grav[i] * 0.85f + e.values[i] * 0.15f else e.values[i]
+                        hasGrav = true
+                    }
+                    Sensor.TYPE_MAGNETIC_FIELD -> {
+                        for (i in 0..2) geo[i] = if (hasGeo) geo[i] * 0.85f + e.values[i] * 0.15f else e.values[i]
+                        hasGeo = true
+                        if (hasGrav && SensorManager.getRotationMatrix(r, null, grav, geo)) emit()
+                    }
                 }
             }
 
             override fun onAccuracyChanged(s: Sensor?, a: Int) {}
         }
         headingListener = l
-        sm.registerListener(l, sensor, SensorManager.SENSOR_DELAY_UI)
+        if (rotation != null) {
+            sm.registerListener(l, rotation, SensorManager.SENSOR_DELAY_UI)
+        } else if (accel != null && magnet != null) {
+            sm.registerListener(l, accel, SensorManager.SENSOR_DELAY_UI)
+            sm.registerListener(l, magnet, SensorManager.SENSOR_DELAY_UI)
+        } else {
+            headingSink?.error("NO_SENSOR", "Celular sem bússola", null)
+        }
     }
 
     private fun stopHeading() {

@@ -32,11 +32,17 @@ class HeadingService extends ChangeNotifier {
   /// true quando a direção vem do GPS (em movimento).
   bool fromGps = false;
 
+  /// false quando o celular não tem bússola (só GPS em movimento).
+  bool hasCompass = true;
+
   void attach() {
     if (_users++ > 0) return;
     _sub = _events.receiveBroadcastStream().listen((e) {
       if (e is num) _onCompass(e.toDouble());
-    }, onError: (Object _) {});
+    }, onError: (Object _) {
+      hasCompass = false;
+      notifyListeners();
+    });
   }
 
   void detach() {
@@ -74,7 +80,7 @@ class HeadingService extends ChangeNotifier {
     final p = Recorder.instance.position;
     double? h;
     var gps = false;
-    if (p != null && p.speed > 1.5 && p.heading > 0) {
+    if (p != null && p.speed > 0.8 && p.heading > 0) {
       h = p.heading % 360;
       gps = true;
     } else {

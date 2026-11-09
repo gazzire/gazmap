@@ -96,29 +96,63 @@ class StatTile extends StatelessWidget {
   }
 }
 
-/// Seta da posição que gira conforme a direção (bússola ou GPS).
-/// Sem direção conhecida, mostra o ponto azul.
+/// O ponto azul da sua posição É a seta: gira conforme a direção
+/// (bússola parado, GPS em movimento) e projeta um facho à frente,
+/// como no Google Maps. Sem direção, fica só o ponto.
 class HeadingArrow extends StatelessWidget {
   const HeadingArrow({super.key, required this.heading});
 
   final double? heading;
 
+  static const blue = Color(0xFF1E88E5);
+
   @override
   Widget build(BuildContext context) {
     final h = heading;
-    if (h == null) {
-      return const Center(child: SizedBox(width: 24, height: 24, child: PositionDot()));
-    }
+    final dot = Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        color: blue,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black38)],
+      ),
+      alignment: Alignment.center,
+      child: h == null
+          ? null
+          : const Icon(Icons.navigation, color: Colors.white, size: 15),
+    );
+    if (h == null) return Center(child: dot);
     return Transform.rotate(
       angle: h * math.pi / 180,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black38)],
-        ),
-        child: const Icon(Icons.navigation, color: Color(0xFF1E88E5), size: 34),
-      ),
+      child: Stack(alignment: Alignment.center, children: [
+        const CustomPaint(size: Size(64, 64), painter: _BeamPainter()),
+        dot,
+      ]),
     );
   }
+}
+
+/// Facho de direção (cone azul translúcido apontando para cima).
+class _BeamPainter extends CustomPainter {
+  const _BeamPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width / 2, size.height / 2);
+    final r = size.width / 2;
+    final rect = Rect.fromCircle(center: c, radius: r);
+    final paint = Paint()
+      ..shader = RadialGradient(colors: [
+        HeadingArrow.blue.withValues(alpha: 0.45),
+        HeadingArrow.blue.withValues(alpha: 0.0),
+      ]).createShader(rect);
+    // 70° de abertura, centrado para cima (-90°).
+    const sweep = 70 * math.pi / 180;
+    canvas.drawArc(rect, -math.pi / 2 - sweep / 2, sweep, true, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -15,6 +15,7 @@ import '../services/safety.dart';
 import '../services/settings.dart';
 import '../utils/format.dart';
 import '../widgets/base_map.dart';
+import '../widgets/data_view.dart';
 import '../widgets/powered_by.dart';
 import '../widgets/waypoint_sheet.dart';
 import 'group_screen.dart';
@@ -63,6 +64,27 @@ class _RecordScreenState extends State<RecordScreen> {
       ..detach();
     super.dispose();
   }
+
+  /// Visualização: 'both' (mapa + dados), 'map' (só mapa) ou 'data' (só dados).
+  String get _view => _settings.str('viewMode', 'both');
+
+  void _toggleView() {
+    const next = {'both': 'map', 'map': 'data', 'data': 'both'};
+    final v = next[_view] ?? 'both';
+    _settings.setStr('viewMode', v);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: const Duration(seconds: 1),
+      content: Text(switch (v) {
+        'map' => 'Só mapa',
+        'data' => 'Só dados',
+        _ => 'Mapa + dados',
+      }),
+    ));
+  }
+
+  void _openSos() => Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => const SosScreen()));
 
   /// Alterna: livre → seguir (norte para cima) → seguir na direção → norte.
   void _cycleMapMode() {
@@ -273,6 +295,9 @@ class _RecordScreenState extends State<RecordScreen> {
       builder: (context, _) {
         final style = _settings.style;
         final pos = _rec.position;
+        if (_rec.active && _view == 'data') {
+          return DataView(onFinish: _finish, onSos: _openSos, onToggleView: _toggleView);
+        }
         return Stack(
           children: [
             FlutterMap(
@@ -356,8 +381,8 @@ class _RecordScreenState extends State<RecordScreen> {
                   if (pos != null)
                     Marker(
                       point: LatLng(pos.latitude, pos.longitude),
-                      width: 40,
-                      height: 40,
+                      width: 64,
+                      height: 64,
                       child: HeadingArrow(heading: HeadingService.instance.heading),
                     ),
                 ]),
@@ -378,6 +403,7 @@ class _RecordScreenState extends State<RecordScreen> {
                     Expanded(
                       child: Wrap(runSpacing: 6, children: [
                         _GpsChip(position: pos),
+                        _HeadingChip(heading: HeadingService.instance),
                         if (_rec.gpsLost && _rec.steps > 0)
                           const _StatusChip(
                               icon: Icons.directions_walk,
@@ -426,6 +452,17 @@ class _RecordScreenState extends State<RecordScreen> {
                   ),
                     const SizedBox(height: 10),
                     FloatingActionButton.small(
+                      heroTag: 'view',
+                      tooltip: 'Mapa e dados / só mapa / só dados',
+                      onPressed: _toggleView,
+                      child: Icon(switch (_view) {
+                        'map' => Icons.map,
+                        'data' => Icons.dashboard,
+                        _ => Icons.view_agenda,
+                      }),
+                    ),
+                    const SizedBox(height: 6),
+                    FloatingActionButton.small(
                       heroTag: 'layers',
                       tooltip: 'Tipo de mapa',
                       onPressed: _chooseMapStyle,
@@ -454,7 +491,9 @@ class _RecordScreenState extends State<RecordScreen> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: _Panel(
+              child: _rec.active && _view == 'map'
+                  ? _CompactStrip(onFinish: _finish)
+                  : _Panel(
                 onPlan: _pickPlan,
                 onMarkPoint: _markPoint,
                 permError: _permError,
@@ -929,6 +968,85 @@ class _NavInfo extends StatelessWidget {
                 color: g > 0 ? const Color(0xFFE5484D) : const Color(0xFF22C55E)),
           ),
       ]),
+    );
+  }
+}
+
+/// Faixa compacta do modo "Só mapa".
+class _CompactStrip extends StatelessWidget {
+  const _CompactStrip({required this.onFinish});
+  final VoidCallback onFinish;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = Recorder.instance;
+    final scheme = Theme.of(context).colorScheme;
+    final usesSpeed = r.track?.activity.usesSpeed ?? false;
+    Widget v(String value, String label) => Expanded(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(value,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900,
+                    fontFeatures: [FontFeature.tabularFigures()])),
+            Text(label, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+          ]),
+        );
+    return SafeArea(
+      top: false,
+      child: Card(
+        margin: const EdgeInsets.all(10),
+        color: scheme.surface.withValues(alpha: 0.95),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(children: [
+            v('${fmtKm(r.distance)} km', 'distância'),
+            v(fmtDuration(r.movingTime), 'tempo'),
+            usesSpeed
+                ? v(fmtSpeed(r.position?.speed ?? 0), 'km/h')
+                : v(fmtPace(r.pace), 'ritmo /km'),
+            IconButton.filledTonal(
+              icon: Icon(r.state == RecState.recording ? Icons.pause : Icons.play_arrow),
+              onPressed: r.state == RecState.recording ? r.pause : r.resume,
+            ),
+            GestureDetector(
+              onLongPress: onFinish,
+              child: IconButton.filled(
+                style: IconButton.styleFrom(backgroundColor: scheme.error),
+                icon: const Icon(Icons.stop),
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Segure o botão para finalizar.'))),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mostra a direção atual (confirma que a seta está funcionando).
+class _HeadingChip extends StatelessWidget {
+  const _HeadingChip({required this.heading});
+  final HeadingService heading;
+
+  static String _cardinal(double d) {
+    const n = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
+    return n[((d + 22.5) % 360 ~/ 45)];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final h = heading.heading;
+    if (h == null) {
+      return _StatusChip(
+        icon: Icons.explore_off,
+        text: heading.hasCompass ? 'Direção: calibrando' : 'Sem bússola: ande para ver',
+        color: Colors.grey,
+      );
+    }
+    return _StatusChip(
+      icon: Icons.explore,
+      text: '${_cardinal(h)} ${h.round()}° · ${heading.fromGps ? 'GPS' : 'bússola'}',
+      color: const Color(0xFF1E88E5),
     );
   }
 }
