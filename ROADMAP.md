@@ -80,6 +80,15 @@ Entregue numa única versão (antes planejado como v0.2 a v0.5):
 ### 🌐 Opcional com internet
 - Localização ao vivo por link (gazire.com.br/gazmap/ao-vivo/...), expira ao terminar
 
+## v0.3 — Tela, direção e histórico ✅ (09/11/2026)
+
+- **Ponto com seta:** o ponto azul da posição é a seta, com facho de direção (bússola parado; GPS em movimento); funciona também em celulares sem giroscópio
+- **Mapa que gira na direção** (como apps de navegação de carro) e modo norte para cima
+- **Tipo de mapa com um toque:** Topográfico, Ruas e Satélite (satélite só com internet)
+- **3 modos de tela:** mapa + dados, só mapa, só dados (números grandes e escolhidos por você), antes e durante a gravação
+- **Aba Trilhas:** importar (como trilha feita ou rota) e exportar em destaque; menu por trilha; exportar várias de uma vez; busca e filtros por nome, tipo e mês
+- **Comunicação:** app, site e documentação não citam apps concorrentes
+
 ## Próximos passos
 
 - **Teste real em trilha** e ajustes a partir do uso
