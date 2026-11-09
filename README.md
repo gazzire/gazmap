@@ -11,18 +11,19 @@
 
 Os apps populares de atividade física vêm movendo recursos que eram gratuitos (como mapa offline, retrospectiva anual e rankings) para trás de assinaturas. O GAZMAP faz o caminho contrário: o essencial é grátis para sempre, e o código é da comunidade.
 
-## Recursos (v0.1)
+## Recursos (v0.2)
 
-- 🎯 **Quatro atividades:** Trilha, Caminhada, Corrida e Bike, cada uma com sua métrica (ritmo em min/km ou velocidade em km/h)
-- 📡 **GPS em segundo plano** com a tela apagada e o celular no bolso
-- 📊 Distância, tempo em movimento, ritmo, velocidade, subida e descida
-- ⏸️ Pausa manual e automática; **"segure para finalizar"** evita toques acidentais
-- 🔊 **Avisos por voz configuráveis:** a cada 500 m até 20 km, ou a cada 5 a 60 minutos, e você escolhe o que ouvir
-- 🗺️ **Mapas offline grátis:** busque o lugar pelo nome (ex.: "Serra do Cipó"), ajuste a área e baixe
-- 🏔️ Mapa topográfico com curvas de nível (OpenTopoMap) ou mapa de ruas (OpenStreetMap)
-- 📈 Perfil de altimetria de cada atividade
-- 📤 **Exportação GPX** (compatível com Strava, Wikiloc, Komoot e Garmin)
-- 🛟 À prova de travamento: cada ponto é salvo na hora e a atividade é recuperada se o app fechar
+- 🎯 **4 atividades** (Trilha, Caminhada, Corrida, Bike), GPS com tela apagada, pausa automática, "segure para finalizar"
+- 👣 **Passos e cadência**, com estimativa de distância quando o GPS falha
+- 🔊 **Avisos por voz** configuráveis (500 m a 20 km ou 5 a 60 min)
+- 🆘 **SOS por SMS sem internet**, Plano de trilha, "Você está bem?", aviso de bateria, alerta de pôr do sol, sinal de resgate e ficha de emergência
+- 🗺️ **Mapas offline grátis**: busca por nome, pacote de Minas Gerais, entorno de rotas
+- 🧭 **Navegação por rota** com alerta de fora da rota e "voltar por onde vim"
+- 📁 **GPX, TCX e FIT**: importe e exporte atividades e rotas (inclui o export do Strava)
+- 🥇 **Melhor Volta**: recordes, fantasma ao vivo e trechos favoritos
+- 👥 **Modo Grupo sem internet**: mapa do grupo, mensagens, ranking com pontos GAZ, pódio e SOS que viaja de celular em celular
+- 📊 Retrospectiva do ano, mapa de calor, conquistas e pontos marcados com foto
+- 🌐 Opcional: localização ao vivo por link
 
 Veja o que vem depois no [ROADMAP](ROADMAP.md).
 
