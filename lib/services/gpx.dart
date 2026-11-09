@@ -16,7 +16,7 @@ String _esc(String s) => s
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
 
-/// Gera GPX 1.1 (compatível com Strava, Wikiloc, Komoot, Garmin...).
+/// Gera GPX 1.1 (o formato mais compatível entre apps e relógios).
 String buildGpx(Track t, List<TrackPoint> points) {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
@@ -109,7 +109,7 @@ ParsedGpx? parseGpx(String xml, {String fallbackName = 'Rota importada'}) {
   return ParsedGpx(name.isEmpty ? fallbackName : name, pts, type);
 }
 
-/// Converte o tipo do GPX (Strava, Garmin, Wikiloc) em atividade do GAZMAP.
+/// Converte o tipo informado no arquivo em atividade do GAZMAP.
 Activity activityFromGpxType(String type) {
   if (type.contains('cycl') || type.contains('bik') || type.contains('ride') || type == '1') {
     return Activity.bike;
@@ -137,7 +137,7 @@ Future<int> importRoutes(List<(String, Uint8List)> files) async {
   return n;
 }
 
-/// Importa atividades com horário (ex.: exportação do Strava) para o histórico.
+/// Importa atividades com horário (ex.: exportadas de outros apps) para o histórico.
 Future<int> importActivities(List<(String, Uint8List)> files) async {
   var n = 0;
   final db = AppDatabase.instance;

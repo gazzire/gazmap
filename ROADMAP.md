@@ -24,7 +24,7 @@ App de trilhas **livre (GPL v3), gratuito e offline-first**, para Android, com i
 
 ---
 
-## Princípios (nascidos das reclamações dos usuários de Strava, AllTrails, Komoot e similares)
+## Princípios (nascidos das reclamações mais comuns de usuários de apps de atividade física)
 
 | Reclamação recorrente | Compromisso do GAZMAP |
 |---|---|
@@ -62,7 +62,7 @@ Entregue numa única versão (antes planejado como v0.2 a v0.5):
 - Navegação por rota com alerta de fora da rota, distância e subida restantes e hora de chegada; voltar por onde vim
 
 ### 📁 Arquivos
-- Importar e exportar **GPX, TCX e FIT** (atividades e rotas); importa o export do Strava (.fit.gz)
+- Importar e exportar **GPX, TCX e FIT** (atividades e rotas); importa arquivos .fit.gz exportados de outros apps
 
 ### 🥇 Melhor Volta
 - Reconhecimento de trilhas repetidas, recorde, média, medalhas, comparação com a última vez
@@ -96,6 +96,6 @@ Entregue numa única versão (antes planejado como v0.2 a v0.5):
 
 ## Fora do escopo (decisões conscientes)
 
-- **Engenharia reversa da API privada do Strava:** viola os termos de uso, expõe o repositório a remoção e não é necessária. Os algoritmos (distância, altimetria, ritmo) são conhecimento público e foram implementados do zero
-- **Rankings públicos globais e segmentos ao estilo Strava:** exigem servidor central e têm risco de patente. Os recordes do GAZMAP são pessoais, e o ranking do Modo Grupo acontece só entre celulares próximos, sem servidor
+- **Engenharia reversa de APIs privadas de outros apps:** viola os termos de uso, expõe o repositório a remoção e não é necessária. Os algoritmos (distância, altimetria, ritmo) são conhecimento público e foram implementados do zero
+- **Rankings públicos globais e segmentos compartilhados:** exigem servidor central e têm risco de patente. Os recordes do GAZMAP são pessoais, e o ranking do Modo Grupo acontece só entre celulares próximos, sem servidor
 - Anúncios, rastreamento de usuários e conta obrigatória

@@ -72,7 +72,7 @@ class _RoutesScreenState extends State<RoutesScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(32),
                     child: Text(
-                      'Nenhuma rota ainda.\n\nImporte um arquivo GPX, TCX ou FIT (Wikiloc, Strava, Komoot, Garmin) '
+                      'Nenhuma rota ainda.\n\nImporte um arquivo GPX, TCX ou FIT exportado de outro app ou site '
                       'ou salve uma atividade sua como rota.',
                       textAlign: TextAlign.center,
                     ),
@@ -133,12 +133,12 @@ class RouteDetailScreen extends StatelessWidget {
           ListTile(
               leading: const Icon(Icons.description),
               title: const Text('GPX'),
-              subtitle: const Text('Strava, Wikiloc, Komoot, Garmin'),
+              subtitle: const Text('O formato mais compatível com apps e sites de trilha'),
               onTap: () => Navigator.pop(ctx, FileFormat.gpx)),
           ListTile(
               leading: const Icon(Icons.watch),
               title: const Text('TCX (Course)'),
-              subtitle: const Text('Relógios e ciclocomputadores Garmin'),
+              subtitle: const Text('Para relógios e ciclocomputadores'),
               onTap: () => Navigator.pop(ctx, FileFormat.tcx)),
         ]),
       ),

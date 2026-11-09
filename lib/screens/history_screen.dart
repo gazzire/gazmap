@@ -78,7 +78,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const ListTile(
             title: Text('Importar arquivo GPX, TCX ou FIT', style: TextStyle(fontWeight: FontWeight.w800)),
-            subtitle: Text('Funciona com Strava, Garmin, Wikiloc, Komoot e o export do Strava (.fit.gz).'),
+            subtitle: Text('Arquivos exportados de outros apps, relógios e sites de trilha, inclusive .fit.gz.'),
           ),
           ListTile(
             leading: const Icon(Icons.history),
@@ -123,9 +123,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             ListTile(title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800))),
             for (final (f, sub) in [
-              (FileFormat.gpx, 'Mais compatível: Strava, Wikiloc, Komoot, Garmin'),
-              (FileFormat.tcx, 'Garmin, TrainingPeaks, Strava'),
-              (FileFormat.fit, 'Relógios, Strava e Garmin Connect'),
+              (FileFormat.gpx, 'O mais compatível com apps e sites de trilha'),
+              (FileFormat.tcx, 'Relógios e plataformas de treino'),
+              (FileFormat.fit, 'Formato nativo de relógios e ciclocomputadores'),
             ])
               ListTile(
                 leading: const Icon(Icons.description),

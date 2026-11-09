@@ -75,7 +75,7 @@ void main() {
     expect(g.type, 'hiking');
   });
 
-  test('FIT compactado (.fit.gz do export do Strava)', () {
+  test('FIT compactado (.fit.gz exportado de outros apps)', () {
     final gz = Uint8List.fromList(gzip.encode(buildFit(_track(), _points())));
     final g = parseAny('atividade.fit.gz', gz)!;
     expect(g.points.length, 50);

@@ -19,7 +19,7 @@ Os apps populares de atividade física vêm movendo recursos que eram gratuitos 
 - 🆘 **SOS por SMS sem internet**, Plano de trilha, "Você está bem?", aviso de bateria, alerta de pôr do sol, sinal de resgate e ficha de emergência
 - 🗺️ **Mapas offline grátis**: busca por nome, pacote de Minas Gerais, entorno de rotas
 - 🧭 **Navegação por rota** com alerta de fora da rota e "voltar por onde vim"
-- 📁 **GPX, TCX e FIT**: importe e exporte atividades e rotas (inclui o export do Strava)
+- 📁 **GPX, TCX e FIT**: importe e exporte atividades e rotas (inclui arquivos .fit.gz exportados de outros apps)
 - 🥇 **Melhor Volta**: recordes, fantasma ao vivo e trechos favoritos
 - 👥 **Modo Grupo sem internet**: mapa do grupo, mensagens, ranking com pontos GAZ, pódio e SOS que viaja de celular em celular
 - 📊 Retrospectiva do ano, mapa de calor, conquistas e pontos marcados com foto

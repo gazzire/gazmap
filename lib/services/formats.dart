@@ -10,7 +10,7 @@ import '../models/extra.dart';
 import '../models/track.dart';
 import 'gpx.dart';
 
-/// Formatos aceitos pelo Strava, Garmin, Komoot, Wikiloc e afins.
+/// Formatos padrão de atividades e rotas, aceitos pela maioria dos apps e relógios.
 enum FileFormat {
   gpx('GPX', 'gpx', 'application/gpx+xml'),
   tcx('TCX', 'tcx', 'application/vnd.garmin.tcx+xml'),
@@ -23,7 +23,7 @@ enum FileFormat {
 }
 
 // ======================================================================
-// Leitura (detecta o formato pelo conteúdo; aceita .gz do export do Strava)
+// Leitura (detecta o formato pelo conteúdo; aceita arquivos .gz exportados de outros apps)
 // ======================================================================
 
 ParsedGpx? parseAny(String fileName, Uint8List bytes) {
@@ -79,7 +79,7 @@ ParsedGpx? parseTcx(String xml, {String fallbackName = 'Importado'}) {
       (name == null || name.isEmpty || name.length > 80) ? fallbackName : name, pts, sport);
 }
 
-// ---------- FIT (binário Garmin/ANT) ----------
+// ---------- FIT (formato binário de relógios e ciclocomputadores) ----------
 
 const _fitEpoch = 631065600; // 1989-12-31T00:00:00Z em segundos Unix
 const _semi = 2147483648.0 / 180.0;
@@ -363,7 +363,7 @@ class _FitWriter {
 
 int _fitTs(DateTime t) => t.toUtc().millisecondsSinceEpoch ~/ 1000 - _fitEpoch;
 
-/// FIT de atividade (aceito por Strava, Garmin Connect, TrainingPeaks...).
+/// FIT de atividade (formato nativo de relógios e plataformas de treino).
 Uint8List buildFit(Track t, List<TrackPoint> pts) {
   final w = _FitWriter();
   final start = _fitTs(t.startedAt);

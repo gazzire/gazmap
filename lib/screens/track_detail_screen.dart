@@ -77,9 +77,9 @@ class _TrackDetailScreenState extends State<TrackDetailScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const ListTile(title: Text('Exportar atividade como')),
           for (final (fmt, sub) in [
-            (FileFormat.gpx, 'Strava, Wikiloc, Komoot, Garmin (mais compatível)'),
-            (FileFormat.tcx, 'Garmin, TrainingPeaks, Strava'),
-            (FileFormat.fit, 'Formato nativo de relógios; Strava e Garmin Connect'),
+            (FileFormat.gpx, 'O mais compatível com apps e sites de trilha'),
+            (FileFormat.tcx, 'Relógios e plataformas de treino'),
+            (FileFormat.fit, 'Formato nativo de relógios e ciclocomputadores'),
           ])
             ListTile(
               leading: const Icon(Icons.description),

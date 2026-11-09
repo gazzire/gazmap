@@ -98,7 +98,7 @@ class StatTile extends StatelessWidget {
 
 /// O ponto azul da sua posição É a seta: gira conforme a direção
 /// (bússola parado, GPS em movimento) e projeta um facho à frente,
-/// como no Google Maps. Sem direção, fica só o ponto.
+/// como nos apps de navegação. Sem direção, fica a seta sem o facho.
 class HeadingArrow extends StatelessWidget {
   const HeadingArrow({super.key, required this.heading});
 
