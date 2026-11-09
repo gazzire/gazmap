@@ -119,10 +119,9 @@ class HeadingArrow extends StatelessWidget {
         boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black38)],
       ),
       alignment: Alignment.center,
-      child: h == null
-          ? null
-          : const Icon(Icons.navigation, color: Colors.white, size: 15),
+      child: const Icon(Icons.navigation, color: Colors.white, size: 15),
     );
+    // Sem direção ainda: seta sem facho, até a bússola ou o GPS responderem.
     if (h == null) return Center(child: dot);
     return Transform.rotate(
       angle: h * math.pi / 180,

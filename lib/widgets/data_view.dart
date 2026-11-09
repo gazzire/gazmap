@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../models/track.dart';
+import '../services/heading.dart';
 import '../services/navigation.dart';
 import '../services/recorder.dart';
 import '../services/safety.dart';
@@ -25,12 +27,18 @@ enum Metric {
   ghost('Contra o recorde'),
   sunset('Pôr do sol'),
   battery('Bateria'),
-  clock('Hora');
+  clock('Hora'),
+  accuracy('Precisão do GPS'),
+  direction('Direção'),
+  coords('Coordenadas');
 
   const Metric(this.label);
   final String label;
 
   static const defaults = [dist, moving, pace, gain, steps, alt, sunset, remaining, ghost];
+
+  /// Antes de iniciar: informações do lugar e do aparelho.
+  static const idle = [direction, alt, accuracy, sunset, battery, clock, coords];
 
   static List<Metric> parse(String raw) {
     if (raw.isEmpty) return defaults;
@@ -94,6 +102,17 @@ enum Metric {
         return b == null ? null : ('$b', '%');
       case clock:
         return (fmtDate(DateTime.now()).split(' ').last, '');
+      case accuracy:
+        return p == null ? null : ('${p.accuracy.round()}', 'm');
+      case direction:
+        final h = HeadingService.instance.heading;
+        if (h == null) return null;
+        const n = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
+        return ('${n[((h + 22.5) % 360) ~/ 45]} ${h.round()}°', '');
+      case coords:
+        return p == null
+            ? null
+            : ('${p.latitude.toStringAsFixed(4)}, ${p.longitude.toStringAsFixed(4)}', '');
     }
   }
 }
@@ -105,7 +124,12 @@ class DataView extends StatelessWidget {
     required this.onFinish,
     required this.onSos,
     required this.onToggleView,
+    this.onStart,
   });
+
+  /// Preenchido quando ainda não começou a gravar (mostra INICIAR).
+  final VoidCallback? onStart;
+  bool get _idle => onStart != null;
 
   final VoidCallback onFinish;
   final VoidCallback onSos;
@@ -170,7 +194,7 @@ class DataView extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = Recorder.instance;
     final scheme = Theme.of(context).colorScheme;
-    final metrics = Metric.parse(Settings.instance.str('dataFields'));
+    final metrics = _idle ? Metric.idle : Metric.parse(Settings.instance.str('dataFields'));
     final values = [
       for (final m in metrics)
         if (m.read() case final v?) (m, v),
@@ -191,11 +215,17 @@ class DataView extends StatelessWidget {
                 icon: const Icon(Icons.dashboard),
                 onPressed: onToggleView,
               ),
-              IconButton(
-                tooltip: 'Escolher números',
-                icon: const Icon(Icons.tune),
-                onPressed: () => _editFields(context),
-              ),
+              if (!_idle)
+                IconButton(
+                  tooltip: 'Escolher números',
+                  icon: const Icon(Icons.tune),
+                  onPressed: () => _editFields(context),
+                ),
+              if (_idle)
+                const Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Text('Pronto para iniciar', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
               const Spacer(),
               if (r.state == RecState.paused)
                 const Padding(
@@ -269,6 +299,32 @@ class DataView extends StatelessWidget {
               ],
             ),
           ),
+          if (_idle)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(children: [
+                Wrap(spacing: 6, children: [
+                  for (final act in Activity.values)
+                    ChoiceChip(
+                      avatar: Icon(act.icon, size: 18),
+                      label: Text(act.label),
+                      selected: Settings.instance.activity == act,
+                      onSelected: (_) => Settings.instance.setActivity(act),
+                    ),
+                ]),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 64,
+                  child: FilledButton.icon(
+                    onPressed: onStart,
+                    icon: const Icon(Icons.play_arrow_rounded, size: 34),
+                    label: const Text('INICIAR', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              ]),
+            )
+          else
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(children: [

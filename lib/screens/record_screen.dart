@@ -295,8 +295,13 @@ class _RecordScreenState extends State<RecordScreen> {
       builder: (context, _) {
         final style = _settings.style;
         final pos = _rec.position;
-        if (_rec.active && _view == 'data') {
-          return DataView(onFinish: _finish, onSos: _openSos, onToggleView: _toggleView);
+        if (_view == 'data') {
+          return DataView(
+            onFinish: _finish,
+            onSos: _openSos,
+            onToggleView: _toggleView,
+            onStart: _rec.active ? null : _start,
+          );
         }
         return Stack(
           children: [
@@ -491,8 +496,10 @@ class _RecordScreenState extends State<RecordScreen> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: _rec.active && _view == 'map'
-                  ? _CompactStrip(onFinish: _finish)
+              child: _view == 'map'
+                  ? (_rec.active
+                      ? _CompactStrip(onFinish: _finish)
+                      : _CompactIdle(onStart: _start))
                   : _Panel(
                 onPlan: _pickPlan,
                 onMarkPoint: _markPoint,
@@ -1047,6 +1054,47 @@ class _HeadingChip extends StatelessWidget {
       icon: Icons.explore,
       text: '${_cardinal(h)} ${h.round()}° · ${heading.fromGps ? 'GPS' : 'bússola'}',
       color: const Color(0xFF1E88E5),
+    );
+  }
+}
+
+/// Modo "Só mapa" antes de iniciar: só a atividade e o INICIAR.
+class _CompactIdle extends StatelessWidget {
+  const _CompactIdle({required this.onStart});
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = Settings.instance;
+    final scheme = Theme.of(context).colorScheme;
+    return SafeArea(
+      top: false,
+      child: Card(
+        margin: const EdgeInsets.all(10),
+        color: scheme.surface.withValues(alpha: 0.95),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(children: [
+            for (final a in Activity.values)
+              IconButton(
+                tooltip: a.label,
+                isSelected: s.activity == a,
+                style: IconButton.styleFrom(
+                  backgroundColor: s.activity == a ? scheme.primary : null,
+                  foregroundColor: s.activity == a ? Colors.white : null,
+                ),
+                icon: Icon(a.icon),
+                onPressed: () => s.setActivity(a),
+              ),
+            const Spacer(),
+            FilledButton.icon(
+              onPressed: onStart,
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('INICIAR', style: TextStyle(fontWeight: FontWeight.w900)),
+            ),
+          ]),
+        ),
+      ),
     );
   }
 }

@@ -174,7 +174,8 @@ class MainActivity : FlutterActivity() {
         val geo = FloatArray(3)
         var hasGrav = false
         var hasGeo = false
-        var last = -1000.0
+        var last = 0.0
+        var hasLast = false
         var lastAt = 0L
 
         fun emit() {
@@ -182,9 +183,11 @@ class MainActivity : FlutterActivity() {
             var deg = Math.toDegrees(o[0].toDouble())
             if (deg < 0) deg += 360.0
             val now = System.currentTimeMillis()
-            var diff = Math.abs(deg - last)
-            if (diff > 180) diff = 360 - diff
-            if (diff >= 1.0 && now - lastAt >= 60) {
+            var diff = Math.abs(deg - last) % 360.0
+            if (diff > 180) diff = 360.0 - diff
+            // Primeiro valor sempre sai; depois, só quando muda 1° ou mais.
+            if (!hasLast || (diff >= 1.0 && now - lastAt >= 60)) {
+                hasLast = true
                 last = deg
                 lastAt = now
                 headingSink?.success(deg)
