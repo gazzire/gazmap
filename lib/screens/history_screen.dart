@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/track.dart';
 import '../services/database.dart';
 import '../utils/format.dart';
+import '../services/gpx.dart';
+import '../services/native.dart';
+import 'stats_screen.dart';
 import 'track_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -29,6 +32,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.dispose();
   }
 
+  Future<void> _import() async {
+    final files = await NativeBridge.pickFiles();
+    if (files.isEmpty) return;
+    final n = await importActivities(files);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(n == 0
+            ? 'Nenhuma atividade reconhecida. Use GPX, TCX ou FIT com horários '
+                '(no export do Strava, ficam na pasta "activities").'
+            : '$n ${n == 1 ? 'atividade importada' : 'atividades importadas'}.')));
+  }
+
   Future<void> _load() async {
     final t = await _db.finishedTracks();
     if (mounted) setState(() => _tracks = t);
@@ -38,7 +53,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     final tracks = _tracks;
     return Scaffold(
-      appBar: AppBar(title: const Text('Atividades')),
+      appBar: AppBar(
+        title: const Text('Atividades'),
+        actions: [
+          IconButton(
+            tooltip: 'Importar (GPX, TCX, FIT, Strava)',
+            icon: const Icon(Icons.file_download),
+            onPressed: _import,
+          ),
+          IconButton(
+            tooltip: 'Retrospectiva e conquistas',
+            icon: const Icon(Icons.emoji_events),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const StatsScreen())),
+          ),
+        ],
+      ),
       body: tracks == null
           ? const Center(child: CircularProgressIndicator())
           : tracks.isEmpty

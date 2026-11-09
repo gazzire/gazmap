@@ -3,12 +3,23 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../models/extra.dart';
 import '../models/track.dart';
+import '../services/database.dart';
+import '../services/group.dart';
+import '../services/live.dart';
+import '../services/navigation.dart';
 import '../services/recorder.dart';
+import '../services/safety.dart';
 import '../services/settings.dart';
 import '../utils/format.dart';
 import '../widgets/base_map.dart';
 import '../widgets/powered_by.dart';
+import '../widgets/waypoint_sheet.dart';
+import 'group_screen.dart';
+import 'offline_maps_screen.dart';
+import 'safety_settings_screen.dart';
+import 'sos_screen.dart';
 import 'track_detail_screen.dart';
 
 class RecordScreen extends StatefulWidget {
@@ -25,6 +36,7 @@ class _RecordScreenState extends State<RecordScreen> {
   bool _mapReady = false;
   bool _follow = true;
   String? _permError;
+  final List<Waypoint> _waypoints = [];
 
   // Centro inicial: Brasil. Substituído pela posição real assim que houver GPS.
   static const _fallback = LatLng(-19.92, -43.94);
@@ -67,7 +79,58 @@ class _RecordScreenState extends State<RecordScreen> {
       _permError = null;
       _follow = true;
     });
+    _waypoints.clear();
     await _rec.start(_settings.activity);
+    RouteNavigator.instance.startPending();
+    await _checkOfflineMap();
+  }
+
+  /// Avisa se não há mapa offline baixado para o local atual.
+  Future<void> _checkOfflineMap() async {
+    final p = _rec.position;
+    if (p == null) return;
+    final regions = await AppDatabase.instance.regions();
+    final covered = regions.any((r) =>
+        p.latitude >= r.south && p.latitude <= r.north &&
+        p.longitude >= r.west && p.longitude <= r.east && r.maxZoom >= 13);
+    if (covered || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: const Duration(seconds: 6),
+      content: const Text('Você está sem mapa offline detalhado para esta área.'),
+      action: SnackBarAction(
+        label: 'Baixar',
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const OfflineMapsScreen())),
+      ),
+    ));
+  }
+
+  Future<void> _pickPlan() async {
+    final safety = SafetyService.instance;
+    if (safety.contacts.isEmpty) {
+      await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const SafetySettingsScreen()));
+      if (safety.contacts.isEmpty) return;
+    }
+    if (!mounted) return;
+    final now = DateTime.now();
+    final t = await showTimePicker(
+      context: context,
+      helpText: 'Horário previsto de volta',
+      initialTime: TimeOfDay.fromDateTime(now.add(const Duration(hours: 3))),
+    );
+    if (t == null) return;
+    var ret = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+    if (ret.isBefore(now)) ret = ret.add(const Duration(days: 1));
+    setState(() => safety.pendingPlanReturn = ret);
+  }
+
+  Future<void> _markPoint() async {
+    final p = _rec.position;
+    if (p == null) return;
+    final w = await showWaypointSheet(context,
+        lat: p.latitude, lon: p.longitude, trackId: _rec.track?.id);
+    if (w != null) setState(() => _waypoints.add(w));
   }
 
   Future<void> _finish() async {
@@ -130,7 +193,14 @@ class _RecordScreenState extends State<RecordScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([_rec, _settings]),
+      listenable: Listenable.merge([
+        _rec,
+        _settings,
+        SafetyService.instance,
+        RouteNavigator.instance,
+        GroupService.instance,
+        LiveShare.instance,
+      ]),
       builder: (context, _) {
         final style = _settings.style;
         final pos = _rec.position;
@@ -151,6 +221,14 @@ class _RecordScreenState extends State<RecordScreen> {
               ),
               children: [
                 ...baseMapLayers(style),
+                if (RouteNavigator.instance.points.length > 1)
+                  PolylineLayer(polylines: [
+                    Polyline(
+                      points: RouteNavigator.instance.points,
+                      strokeWidth: 7,
+                      color: const Color(0xFF1E88E5).withOpacity(0.75),
+                    ),
+                  ]),
                 PolylineLayer(
                   polylines: [
                     for (final s in _rec.segments)
@@ -164,15 +242,49 @@ class _RecordScreenState extends State<RecordScreen> {
                         ),
                   ],
                 ),
-                if (pos != null)
-                  MarkerLayer(markers: [
+                MarkerLayer(markers: [
+                  for (final w in _waypoints)
+                    Marker(
+                      point: w.latLng,
+                      width: 30,
+                      height: 30,
+                      child: Text(w.kind.emoji, style: const TextStyle(fontSize: 22)),
+                    ),
+                  for (final m in GroupService.instance.myGroup)
+                    if (m.pos != null)
+                      Marker(
+                        point: m.pos!,
+                        width: 90,
+                        height: 44,
+                        child: Column(children: [
+                          const Icon(Icons.person_pin_circle, color: Color(0xFF7C3AED), size: 26),
+                          Text(m.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                        ]),
+                      ),
+                  if (RouteNavigator.instance.ghostPosition != null)
+                    Marker(
+                      point: RouteNavigator.instance.ghostPosition!,
+                      width: 22,
+                      height: 22,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.8),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                  if (pos != null)
                     Marker(
                       point: LatLng(pos.latitude, pos.longitude),
                       width: 24,
                       height: 24,
                       child: const PositionDot(),
                     ),
-                  ]),
+                ]),
               ],
             ),
             SafeArea(
@@ -185,17 +297,39 @@ class _RecordScreenState extends State<RecordScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _GpsChip(position: pos),
-                    const SizedBox(width: 8),
-                    if (_rec.state == RecState.paused)
-                      const _StatusChip(
-                          icon: Icons.pause, text: 'Pausado'),
-                    if (_rec.autoPaused)
-                      const _StatusChip(
-                          icon: Icons.pause_circle_outline,
-                          text: 'Pausa automática'),
-                    const Spacer(),
+                    Expanded(
+                      child: Wrap(runSpacing: 6, children: [
+                        _GpsChip(position: pos),
+                        if (_rec.gpsLost && _rec.steps > 0)
+                          const _StatusChip(
+                              icon: Icons.directions_walk,
+                              text: 'Sem GPS: estimando pelos passos',
+                              color: Colors.orange),
+                        if (_rec.state == RecState.paused)
+                          const _StatusChip(icon: Icons.pause, text: 'Pausado'),
+                        if (_rec.autoPaused)
+                          const _StatusChip(
+                              icon: Icons.pause_circle_outline, text: 'Pausa automática'),
+                        if (SafetyService.instance.sunset != null)
+                          _StatusChip(
+                              icon: Icons.wb_twilight,
+                              text: 'Pôr do sol ${fmtDate(SafetyService.instance.sunset!).split(' ').last}',
+                              color: Colors.deepOrange),
+                        if (SafetyService.instance.planReturn != null)
+                          _StatusChip(
+                              icon: Icons.schedule,
+                              text: 'Volta ${fmtDate(SafetyService.instance.planReturn!).split(' ').last}'),
+                        if (GroupService.instance.active)
+                          _StatusChip(
+                              icon: Icons.groups,
+                              text: '${GroupService.instance.group} (${GroupService.instance.myGroup.length})',
+                              color: const Color(0xFF7C3AED)),
+                        if (LiveShare.instance.active)
+                          const _StatusChip(icon: Icons.podcasts, text: 'Ao vivo', color: Colors.red),
+                      ]),
+                    ),
                     if (!_follow)
                       FloatingActionButton.small(
                         heroTag: 'recenter',
@@ -209,9 +343,27 @@ class _RecordScreenState extends State<RecordScreen> {
                 ),
               ),
             ),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 92, right: 12),
+                  child: FloatingActionButton(
+                    heroTag: 'sos',
+                    backgroundColor: const Color(0xFFE5484D),
+                    foregroundColor: Colors.white,
+                    onPressed: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const SosScreen())),
+                    child: const Text('SOS', style: TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              ),
+            ),
             Align(
               alignment: Alignment.bottomCenter,
               child: _Panel(
+                onPlan: _pickPlan,
+                onMarkPoint: _markPoint,
                 permError: _permError,
                 onRetryPermission: _permError != null &&
                         _permError!.contains('configurações')
@@ -230,12 +382,16 @@ class _RecordScreenState extends State<RecordScreen> {
 
 class _Panel extends StatelessWidget {
   const _Panel({
+    required this.onPlan,
+    required this.onMarkPoint,
     required this.permError,
     required this.onRetryPermission,
     required this.onStart,
     required this.onFinish,
   });
 
+  final VoidCallback onPlan;
+  final VoidCallback onMarkPoint;
   final String? permError;
   final VoidCallback onRetryPermission;
   final VoidCallback onStart;
@@ -274,7 +430,9 @@ class _Panel extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
+          _IdleOptions(onPlan: onPlan),
+          const SizedBox(height: 12),
           _StartButton(onTap: onStart),
           const SizedBox(height: 14),
           const PoweredBy(),
@@ -287,7 +445,7 @@ class _Panel extends StatelessWidget {
         children: [
           StatTile(
               label: 'Distância',
-              value: fmtKm(rec.stats.distance),
+              value: fmtKm(rec.distance),
               unit: 'km',
               big: true),
           const SizedBox(height: 12),
@@ -316,7 +474,39 @@ class _Panel extends StatelessWidget {
                   .textTheme
                   .labelMedium
                   ?.copyWith(color: scheme.onSurfaceVariant)),
-          const SizedBox(height: 16),
+          if (rec.steps > 0)
+            Text('${rec.steps} passos · ${rec.cadence} passos/min',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: scheme.onSurfaceVariant)),
+          const _NavInfo(),
+          const SizedBox(height: 8),
+          Wrap(alignment: WrapAlignment.center, spacing: 4, children: [
+            TextButton.icon(
+              onPressed: RouteNavigator.instance.startBacktrack,
+              icon: const Icon(Icons.u_turn_left, size: 18),
+              label: const Text('Voltar por onde vim'),
+            ),
+            TextButton.icon(
+              onPressed: onMarkPoint,
+              icon: const Icon(Icons.add_location_alt, size: 18),
+              label: const Text('Marcar ponto'),
+            ),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const GroupScreen())),
+              icon: const Icon(Icons.groups, size: 18),
+              label: const Text('Grupo'),
+            ),
+            if (LiveShare.instance.active)
+              TextButton.icon(
+                onPressed: LiveShare.instance.shareLink,
+                icon: const Icon(Icons.share, size: 18),
+                label: const Text('Link ao vivo'),
+              ),
+          ]),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -546,6 +736,106 @@ class _StartButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _IdleOptions extends StatelessWidget {
+  const _IdleOptions({required this.onPlan});
+  final VoidCallback onPlan;
+
+  @override
+  Widget build(BuildContext context) {
+    final safety = SafetyService.instance;
+    final nav = RouteNavigator.instance;
+    final plan = safety.pendingPlanReturn;
+    final route = nav.pendingRoute;
+    final ghost = nav.pendingGhost;
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        InputChip(
+          avatar: const Icon(Icons.schedule, size: 18),
+          label: Text(plan == null
+              ? 'Plano de trilha'
+              : 'Volta às ${fmtDate(plan).split(' ').last}'),
+          onPressed: onPlan,
+          onDeleted: plan == null
+              ? null
+              : () {
+                  safety.pendingPlanReturn = null;
+                  nav.refresh();
+                },
+        ),
+        if (route != null || ghost != null)
+          InputChip(
+            avatar: Icon(ghost != null ? Icons.emoji_events : Icons.route, size: 18),
+            label: Text(
+              ghost != null ? 'Contra o recorde' : route!.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            onDeleted: () {
+              nav.pendingRoute = null;
+              nav.pendingGhost = null;
+              nav.pendingGhostPoints = null;
+              nav.refresh();
+            },
+          ),
+        ActionChip(
+          avatar: Icon(Icons.groups,
+              size: 18,
+              color: GroupService.instance.active ? const Color(0xFF7C3AED) : null),
+          label: Text(GroupService.instance.active ? GroupService.instance.group : 'Grupo'),
+          onPressed: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const GroupScreen())),
+        ),
+      ],
+    );
+  }
+}
+
+class _NavInfo extends StatelessWidget {
+  const _NavInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final nav = RouteNavigator.instance;
+    if (!nav.active && nav.ghostDeltaSec == null) return const SizedBox.shrink();
+    final eta = nav.eta;
+    final g = nav.ghostDeltaSec;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(children: [
+        if (nav.offRoute)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+                color: const Color(0xFFE5484D), borderRadius: BorderRadius.circular(10)),
+            child: Text('Fora da rota: ${nav.distToRoute.round()} m',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+          ),
+        if (nav.active)
+          Text(
+            '${nav.backtracking ? 'Voltando · ' : ''}Faltam ${fmtKm(nav.remaining)} km'
+            ' · ↑${nav.remainingGain.round()} m'
+            '${eta != null ? ' · chegada ~${fmtDate(DateTime.now().add(eta)).split(' ').last}' : ''}',
+            style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1E88E5)),
+          ),
+        if (g != null)
+          Text(
+            g > 0
+                ? '+${fmtDuration(Duration(seconds: g))} atrás do recorde'
+                : '${fmtDuration(Duration(seconds: -g))} à frente do recorde',
+            style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: g > 0 ? const Color(0xFFE5484D) : const Color(0xFF22C55E)),
+          ),
+      ]),
     );
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../models/region.dart';
 import '../services/database.dart';
@@ -41,6 +43,64 @@ class _OfflineMapsScreenState extends State<OfflineMapsScreen> {
         _size = s;
       });
     }
+  }
+
+  /// Minas Gerais inteiro em visão geral (zoom 6 a 11, ~100 MB).
+  static final _mgBounds = LatLngBounds(const LatLng(-22.93, -51.05), const LatLng(-14.23, -39.85));
+
+  Future<void> _downloadMg() async {
+    final style = Settings.instance.style;
+    final total = TileCache.countTiles(_mgBounds, 6, 11);
+    final progress = ValueNotifier<(int, int)>((0, 0));
+    var cancelled = false;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Baixando Minas Gerais'),
+        content: ValueListenableBuilder<(int, int)>(
+          valueListenable: progress,
+          builder: (_, v, __) => Column(mainAxisSize: MainAxisSize.min, children: [
+            LinearProgressIndicator(value: v.$1 / total),
+            const SizedBox(height: 12),
+            Text('${v.$1} de $total blocos${v.$2 > 0 ? ' · ${v.$2} falharam' : ''}'),
+            const SizedBox(height: 4),
+            const Text('Pode levar alguns minutos. Use Wi‑Fi.', style: TextStyle(fontSize: 12)),
+          ]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              cancelled = true;
+              Navigator.pop(ctx);
+            },
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+    final failed = await TileCache.instance.downloadArea(
+      style: style,
+      bounds: _mgBounds,
+      minZoom: 6,
+      maxZoom: 11,
+      onProgress: (d, t, f) => progress.value = (d, f),
+      isCancelled: () => cancelled,
+    );
+    if (!mounted || cancelled) return;
+    Navigator.of(context).pop();
+    await _db.insertRegion(Region(
+      name: 'Minas Gerais (visão geral)',
+      styleId: style.id,
+      south: _mgBounds.south,
+      west: _mgBounds.west,
+      north: _mgBounds.north,
+      east: _mgBounds.east,
+      minZoom: 6,
+      maxZoom: 11,
+      tiles: total - failed,
+      createdAt: DateTime.now(),
+    ));
   }
 
   Future<void> _clear() async {
@@ -104,6 +164,16 @@ class _OfflineMapsScreenState extends State<OfflineMapsScreen> {
                       style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Text('🗺️', style: TextStyle(fontSize: 28)),
+              title: const Text('Pacote Minas Gerais'),
+              subtitle: const Text(
+                  'O estado inteiro em visão geral (~100 MB). Para o detalhe das trilhas, '
+                  'baixe a área da trilha ou o entorno de uma rota.'),
+              trailing: FilledButton(onPressed: _downloadMg, child: const Text('Baixar')),
             ),
           ),
           if (_regions.isEmpty)

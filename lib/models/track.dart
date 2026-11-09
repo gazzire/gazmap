@@ -81,6 +81,7 @@ class Track {
     this.loss = 0,
     this.maxSpeed = 0,
     this.finished = false,
+    this.steps = 0,
   });
 
   int? id;
@@ -96,6 +97,9 @@ class Track {
   double maxSpeed;
   bool finished;
 
+  /// Passos contados pelo sensor do celular (0 em Bike).
+  int steps;
+
   Map<String, Object?> toMap() => {
         if (id != null) 'id': id,
         'name': name,
@@ -109,6 +113,7 @@ class Track {
         'loss': loss,
         'max_speed': maxSpeed,
         'finished': finished ? 1 : 0,
+        'steps': steps,
       };
 
   factory Track.fromMap(Map<String, Object?> m) => Track(
@@ -126,6 +131,7 @@ class Track {
         loss: (m['loss'] as num).toDouble(),
         maxSpeed: (m['max_speed'] as num).toDouble(),
         finished: (m['finished'] as int) == 1,
+        steps: (m['steps'] as int?) ?? 0,
       );
 
   void applyStats(StatsAccumulator s) {

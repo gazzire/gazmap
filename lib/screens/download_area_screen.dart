@@ -14,7 +14,11 @@ import '../widgets/base_map.dart';
 
 /// Escolha do lugar a baixar: busca pelo nome ou ajuste manual no mapa.
 class DownloadAreaScreen extends StatefulWidget {
-  const DownloadAreaScreen({super.key});
+  const DownloadAreaScreen({super.key, this.initialBounds, this.initialName});
+
+  /// Área pré-selecionada (ex.: entorno de uma rota).
+  final LatLngBounds? initialBounds;
+  final String? initialName;
 
   @override
   State<DownloadAreaScreen> createState() => _DownloadAreaScreenState();
@@ -194,8 +198,15 @@ class _DownloadAreaScreenState extends State<DownloadAreaScreen> {
                     initialZoom: 11,
                     minZoom: 4,
                     maxZoom: 17,
-                    onMapReady: () => setState(
-                        () => _bounds = _map.camera.visibleBounds),
+                    onMapReady: () {
+                      final ib = widget.initialBounds;
+                      if (ib != null) {
+                        _map.fitCamera(CameraFit.bounds(
+                            bounds: ib, padding: const EdgeInsets.all(8), maxZoom: 15));
+                        _placeName = widget.initialName ?? '';
+                      }
+                      setState(() => _bounds = _map.camera.visibleBounds);
+                    },
                     onPositionChanged: (camera, _) =>
                         setState(() => _bounds = camera.visibleBounds),
                   ),

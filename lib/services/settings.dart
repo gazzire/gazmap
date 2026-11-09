@@ -162,4 +162,50 @@ class Settings extends ChangeNotifier {
     await _prefs.setString('activity', a.name);
     notifyListeners();
   }
+
+  // ---------- Preferências genéricas (v0.2) ----------
+
+  String str(String key, [String def = '']) => _prefs.getString(key) ?? def;
+  bool flag(String key, [bool def = false]) => _prefs.getBool(key) ?? def;
+  int intVal(String key, [int def = 0]) => _prefs.getInt(key) ?? def;
+
+  Future<void> setStr(String key, String v) async {
+    await _prefs.setString(key, v.trim());
+    notifyListeners();
+  }
+
+  Future<void> setFlag(String key, bool v) async {
+    await _prefs.setBool(key, v);
+    notifyListeners();
+  }
+
+  Future<void> setNum(String key, int v) async {
+    await _prefs.setInt(key, v);
+    notifyListeners();
+  }
+
+  // Ficha de emergência e segurança
+  String get ownerName => str('ownerName');
+  String get bloodType => str('bloodType');
+  String get allergies => str('allergies');
+  String get medications => str('medications');
+  String get healthNotes => str('healthNotes');
+  int get sosResendMinutes => intVal('sosResendMin', 10);
+  int get planMarginMinutes => intVal('planMarginMin', 30);
+  int get immobilityMinutes => intVal('immobilityMin', 20); // 0 = desligado
+  bool get batteryAlert => flag('batteryAlert', true);
+  bool get sunsetAlert => flag('sunsetAlert', true);
+  int get offRouteMeters => intVal('offRouteM', 50);
+
+  // Avisos por voz extras
+  bool get saySteps => flag('saySteps');
+  bool get sayGhost => flag('sayGhost', true);
+
+  // Localização ao vivo
+  bool get liveShare => flag('liveShare');
+  String get liveServer => str('liveServer', 'https://gazire.com.br');
+
+  // Modo Grupo
+  String get groupName => str('groupName');
+  bool get groupRelaySos => flag('groupRelaySos', true);
 }

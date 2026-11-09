@@ -1,0 +1,217 @@
+package br.com.gazire.gazmap
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.telephony.SmsManager
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+/**
+ * Funções nativas do GAZMAP (POWERED BY GAZIRE):
+ * SMS automático (SOS), lanterna, vibração e bipe de resgate.
+ */
+class MainActivity : FlutterActivity() {
+    private var tone: ToneGenerator? = null
+    private var pickResult: MethodChannel.Result? = null
+    private val pickCode = 4242
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "gazmap/native")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "sendSms" -> {
+                        val phone = call.argument<String>("phone")
+                        val text = call.argument<String>("text")
+                        if (phone.isNullOrBlank() || text.isNullOrBlank()) {
+                            result.error("ARGS", "phone/text vazios", null)
+                        } else {
+                            sendSms(phone, text, result)
+                        }
+                    }
+                    "torch" -> {
+                        result.success(torch(call.argument<Boolean>("on") ?: false))
+                    }
+                    "vibrate" -> {
+                        vibrate(call.argument<List<Int>>("pattern") ?: listOf(0, 400))
+                        result.success(true)
+                    }
+                    "beep" -> {
+                        beep(call.argument<Int>("ms") ?: 200)
+                        result.success(true)
+                    }
+                    "pickFiles" -> {
+                        if (pickResult != null) {
+                            result.error("BUSY", "seleção em andamento", null)
+                        } else {
+                            pickResult = result
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                addCategory(Intent.CATEGORY_OPENABLE)
+                                type = "*/*"
+                                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                            }
+                            startActivityForResult(intent, pickCode)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    private fun sendSms(phone: String, text: String, result: MethodChannel.Result) {
+        try {
+            val sms: SmsManager = if (Build.VERSION.SDK_INT >= 31) {
+                getSystemService(SmsManager::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                SmsManager.getDefault()
+            }
+            val parts = sms.divideMessage(text)
+            val action = "br.com.gazire.gazmap.SMS_SENT." + System.nanoTime()
+            var pending = parts.size
+            var ok = true
+            var done = false
+            val handler = Handler(Looper.getMainLooper())
+
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(c: Context?, i: Intent?) {
+                    if (resultCode != Activity.RESULT_OK) ok = false
+                    pending--
+                    if (pending <= 0 && !done) {
+                        done = true
+                        try { unregisterReceiver(this) } catch (_: Exception) {}
+                        result.success(ok)
+                    }
+                }
+            }
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(receiver, IntentFilter(action), Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(receiver, IntentFilter(action))
+            }
+
+            val intents = ArrayList<PendingIntent>()
+            for (k in parts.indices) {
+                val intent = Intent(action).setPackage(packageName)
+                intents.add(
+                    PendingIntent.getBroadcast(
+                        this, (System.nanoTime() % 100000).toInt() + k, intent,
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                )
+            }
+            sms.sendMultipartTextMessage(phone, null, parts, intents, null)
+
+            // Sem confirmação em 45 s: considera falha (fica na fila para nova tentativa).
+            handler.postDelayed({
+                if (!done) {
+                    done = true
+                    try { unregisterReceiver(receiver) } catch (_: Exception) {}
+                    result.success(false)
+                }
+            }, 45000)
+        } catch (e: Exception) {
+            result.error("SMS", e.message, null)
+        }
+    }
+
+    private fun torch(on: Boolean): Boolean {
+        return try {
+            val cm = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val id = cm.cameraIdList.firstOrNull {
+                cm.getCameraCharacteristics(it)
+                    .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+            } ?: return false
+            cm.setTorchMode(id, on)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun vibrate(pattern: List<Int>) {
+        try {
+            val v: Vibrator = if (Build.VERSION.SDK_INT >= 31) {
+                getSystemService(VibratorManager::class.java).defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
+            val arr = pattern.map { it.toLong() }.toLongArray()
+            if (Build.VERSION.SDK_INT >= 26) {
+                v.vibrate(VibrationEffect.createWaveform(arr, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(arr, -1)
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun beep(ms: Int) {
+        try {
+            if (tone == null) tone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+            tone?.startTone(ToneGenerator.TONE_DTMF_D, ms)
+        } catch (_: Exception) {}
+    }
+
+    @Deprecated("API do FlutterActivity")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != pickCode) return
+        val res = pickResult ?: return
+        pickResult = null
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            res.success(emptyList<Map<String, Any>>())
+            return
+        }
+        val uris = ArrayList<Uri>()
+        val clip = data.clipData
+        if (clip != null) {
+            for (i in 0 until clip.itemCount) uris.add(clip.getItemAt(i).uri)
+        } else {
+            data.data?.let { uris.add(it) }
+        }
+        val out = ArrayList<Map<String, Any>>()
+        for (uri in uris) {
+            try {
+                var name = "arquivo"
+                contentResolver.query(uri, null, null, null, null)?.use { c ->
+                    val idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (idx >= 0 && c.moveToFirst()) name = c.getString(idx)
+                }
+                val bytes = contentResolver.openInputStream(uri)?.use {
+                    it.readBytes()
+                } ?: continue
+                if (bytes.size > 40_000_000) continue
+                out.add(mapOf("name" to name, "bytes" to bytes))
+            } catch (_: Exception) {}
+        }
+        res.success(out)
+    }
+
+    override fun onDestroy() {
+        tone?.release()
+        tone = null
+        super.onDestroy()
+    }
+}

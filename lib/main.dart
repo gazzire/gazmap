@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'screens/home_screen.dart';
+import 'services/live.dart';
+import 'services/navigation.dart';
 import 'services/recorder.dart';
+import 'services/safety.dart';
 import 'services/settings.dart';
 import 'services/tile_cache.dart';
 
@@ -10,6 +13,10 @@ Future<void> main() async {
   await Settings.instance.load();
   await TileCache.instance.init();
   await Recorder.instance.recoverUnfinished();
+  await SafetyService.instance.init();
+  // Serviços que acompanham o gravador.
+  RouteNavigator.instance;
+  LiveShare.instance;
   runApp(const GazmapApp());
 }
 
